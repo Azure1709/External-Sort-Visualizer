@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Ứng dụng sắp xếp tệp nhị phân sử dụng thuật toán External Merge Sort với visualization">
+    <title>Binary File Sorter - Sắp Xếp Tệp Nhị Phân</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div class="background-gradient"></div>
+
+    <main class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">
+                <span class="icon">📊</span>
+                Binary File Sorter
+            </h1>
+            <p class="subtitle">Sắp xếp tệp nhị phân với thuật toán External Merge Sort</p>
+        </header>
+
+        <!-- Main Card -->
+        <div class="glass-card main-card">
+            <!-- Input Section -->
+            <section class="input-section" id="inputSection">
+                <h2 class="section-title">📊 Nhập dữ liệu</h2>
+
+                <!-- Tab buttons -->
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="random">🎲 Random</button>
+                    <button class="tab-btn" data-tab="manual">✏️ Nhập tay</button>
+                    <button class="tab-btn" data-tab="file">📁 Tải file</button>
+                </div>
+
+                <!-- Random Tab -->
+                <div class="tab-content active" id="randomTab">
+                    <div class="random-controls">
+                        <div class="input-group">
+                            <label>Số lượng phần tử:</label>
+                            <input type="number" id="randomCount" value="20" min="2" max="100">
+                        </div>
+                        <div class="input-group">
+                            <label>Giá trị nhỏ nhất:</label>
+                            <input type="number" id="randomMin" value="1" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label>Giá trị lớn nhất:</label>
+                            <input type="number" id="randomMax" value="100" step="0.1">
+                        </div>
+                        <button class="btn btn-primary" id="generateBtn">
+                            <span class="btn-icon">🎲</span>
+                            Tạo dãy số ngẫu nhiên
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Tab -->
+                <div class="tab-content" id="manualTab">
+                    <div class="manual-input">
+                        <p class="input-hint">Nhập các số cách nhau bằng dấu cách hoặc dấu phẩy:</p>
+                        <textarea id="manualInput" placeholder="Ví dụ: 23 87 15 67 34 92 5 77 11 42"></textarea>
+                        <button class="btn btn-primary" id="parseBtn">
+                            <span class="btn-icon">✅</span>
+                            Sử dụng dãy số này
+                        </button>
+                    </div>
+                </div>
+
+                <!-- File Tab -->
+                <div class="tab-content" id="fileTab">
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon">📁</div>
+                        <h3>Kéo thả tệp vào đây</h3>
+                        <p>hoặc</p>
+                        <label class="upload-btn" for="fileInput">Chọn tệp nhị phân</label>
+                        <input type="file" id="fileInput" accept=".bin,.dat" hidden>
+                        <p class="upload-hint">Hỗ trợ: .bin, .dat (số thực 8-bytes Double)</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Preview -->
+            <section class="data-preview hidden" id="dataPreview">
+                <h3>📋 Dữ liệu đầu vào (<span id="elementCount">0</span> phần tử)</h3>
+                <div class="data-display" id="dataDisplay"></div>
+            </section>
+
+            <!-- Control Section -->
+            <section class="control-section hidden" id="controlSection">
+                <button class="btn btn-primary" id="sortBtn">
+                    <span class="btn-icon">⚡</span>
+                    Bắt đầu sắp xếp
+                </button>
+                <button class="btn btn-secondary" id="resetBtn">
+                    <span class="btn-icon">🔄</span>
+                    Chọn tệp khác
+                </button>
+            </section>
+
+            <!-- Progress Section -->
+            <section class="progress-section hidden" id="progressSection">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Đang xử lý...</p>
+            </section>
+
+            <!-- Visualization Section -->
+            <section class="visualization-section hidden" id="visualizationSection">
+                <h3 class="viz-title">Quá trình sắp xếp</h3>
+                <div class="viz-container" id="vizContainer"></div>
+                <div class="viz-controls">
+                    <button class="btn btn-small" id="prevStepBtn">⏮ Trước</button>
+                    <button class="btn btn-small btn-primary" id="playPauseBtn">▶ Chạy</button>
+                    <button class="btn btn-small" id="nextStepBtn">Sau ⏭</button>
+                    <div class="speed-control">
+                        <label>Tốc độ:</label>
+                        <input type="range" id="speedSlider" min="1" max="10" value="5">
+                    </div>
+                </div>
+                <div class="viz-legend">
+                    <div class="legend-item">
+                        <span class="legend-color comparing"></span>
+                        <span>Đang so sánh</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color merging"></span>
+                        <span>Đang trộn</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color sorted"></span>
+                        <span>Đã sắp xếp</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Result Section -->
+            <section class="result-section hidden" id="resultSection">
+                <div class="result-icon">✅</div>
+                <h3>Sắp xếp hoàn tất!</h3>
+                <p class="result-stats" id="resultStats"></p>
+                <button class="btn btn-primary btn-large" id="downloadBtn">
+                    <span class="btn-icon">💾</span>
+                    Tải xuống tệp kết quả
+                </button>
+            </section>
+        </div>
+
+        <!-- Algorithm Info -->
+        <div class="glass-card info-card">
+            <h3>📚 Về thuật toán External Merge Sort</h3>
+            <div class="algorithm-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Chia (Divide)</strong>
+                        <p>Chia dữ liệu thành các "runs" nhỏ vừa với bộ nhớ</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Sắp xếp (Sort)</strong>
+                        <p>Sắp xếp từng run trong bộ nhớ</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Trộn (Merge)</strong>
+                        <p>Trộn các runs đã sắp xếp thành một mảng hoàn chỉnh</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>Được xây dựng với ❤️ cho DSA++ | Binary File Sorter v1.0</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>
