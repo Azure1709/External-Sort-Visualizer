@@ -155,27 +155,76 @@
 
         <!-- Algorithm Info -->
         <div class="glass-card info-card">
-            <h3>📚 Về thuật toán External Merge Sort</h3>
-            <div class="algorithm-steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <strong>Chia (Divide)</strong>
-                        <p>Chia dữ liệu thành các "runs" nhỏ vừa với bộ nhớ</p>
+            <!-- External Sort là gì -->
+            <div class="info-header">
+                <span class="info-icon">❓</span>
+                <h3>External Sort là gì?</h3>
+            </div>
+            <p class="info-description">
+                <strong>External Sort</strong> (Sắp xếp ngoại) là thuật toán sắp xếp dữ liệu
+                <em>lớn hơn bộ nhớ RAM</em>. Dữ liệu được chia thành các
+                <strong>Run</strong> nhỏ, sắp xếp trong RAM, rồi gộp lại bằng <strong>K-Way Merge</strong>.
+            </p>
+
+            <div class="phase-buttons">
+                <div class="phase-btn">
+                    <span class="phase-number">1</span>
+                    Phase 1: Tạo Run
+                </div>
+                <div class="phase-btn phase-primary">
+                    <span class="phase-number">2</span>
+                    Phase 2: K-Way Merge
+                </div>
+            </div>
+
+            <!-- Accordion -->
+            <div class="accordion">
+                <div class="accordion-item">
+                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                        <span>⚙️ Cách External Sort Hoạt Động</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="algorithm-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <strong>Chia (Divide)</strong>
+                                    <p>Chia dữ liệu thành các "runs" nhỏ vừa với bộ nhớ</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <strong>Sắp xếp (Sort)</strong>
+                                    <p>Sắp xếp từng run trong bộ nhớ bằng QuickSort/MergeSort</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <strong>Trộn (Merge)</strong>
+                                    <p>K-Way Merge: trộn k runs đã sắp xếp thành một mảng hoàn chỉnh</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <strong>Sắp xếp (Sort)</strong>
-                        <p>Sắp xếp từng run trong bộ nhớ</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <strong>Trộn (Merge)</strong>
-                        <p>Trộn các runs đã sắp xếp thành một mảng hoàn chỉnh</p>
+
+                <div class="accordion-item">
+                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                        <span>💡 Ví Dụ & Trường Hợp Đặc Biệt</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <ul class="example-list">
+                            <li><strong>Ví dụ:</strong> Sắp xếp 1TB dữ liệu với 8GB RAM → Chia thành ~128 runs, mỗi run
+                                8GB</li>
+                            <li><strong>Ứng dụng:</strong> Database indexing, Log file processing, Big Data analytics
+                            </li>
+                            <li><strong>Độ phức tạp:</strong> O(n log n) với n là số phần tử</li>
+                            <li><strong>Ưu điểm:</strong> Xử lý được dữ liệu lớn hơn RAM, I/O hiệu quả</li>
+                        </ul>
                     </div>
                 </div>
             </div>
