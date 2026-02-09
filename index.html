@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Ứng dụng sắp xếp tệp nhị phân sử dụng thuật toán External Merge Sort với visualization">
-    <title>Binary File Sorter - Sắp Xếp Tệp Nhị Phân</title>
+    <meta name="description" content="Ứng dụng minh họa thuật toán External Merge Sort với visualization">
+    <title>External Sort Visualizer - Minh Họa Sắp Xếp Ngoại</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,9 +20,9 @@
         <header class="header">
             <h1 class="title">
                 <span class="icon">📊</span>
-                Binary File Sorter
+                External Sort Visualizer
             </h1>
-            <p class="subtitle">Sắp xếp tệp nhị phân với thuật toán External Merge Sort</p>
+            <p class="subtitle">Minh họa thuật toán External Merge Sort với số thực 8 bytes</p>
         </header>
 
         <!-- Main Card -->
@@ -92,6 +91,57 @@
                 <div class="data-display" id="dataDisplay"></div>
             </section>
 
+            <!-- Algorithm Config -->
+            <section class="config-section hidden" id="configSection">
+                <h3>⚙️ Cấu hình thuật toán</h3>
+
+                <div class="config-grid">
+                    <!-- RAM Limit -->
+                    <div class="config-card">
+                        <div class="config-header">
+                            <span class="config-icon">💾</span>
+                            <span class="config-title">Giới hạn RAM (M)</span>
+                            <span class="config-value" id="ramValue">5</span>
+                            <span class="config-unit">phần tử</span>
+                        </div>
+                        <input type="range" class="config-slider slider-blue" id="ramSlider" min="2" max="20" value="5">
+                        <p class="config-hint">💡 Số lượng phần tử tối đa có thể chứa trong bộ nhớ chính cùng
+                            lúc.</p>
+                    </div>
+
+                    <!-- K-Way Merge -->
+                    <div class="config-card">
+                        <div class="config-header">
+                            <span class="config-icon">🔀</span>
+                            <span class="config-title">Số luồng Merge (K)</span>
+                            <span class="config-value" id="kWayValue">2</span>
+                            <span class="config-unit">run</span>
+                        </div>
+                        <input type="range" class="config-slider slider-orange" id="kWaySlider" min="2" max="8"
+                            value="2">
+                        <p class="config-hint">💡 Số run được merge cùng lúc trong mỗi pass.</p>
+                    </div>
+                </div>
+
+                <!-- Performance Estimation -->
+                <div class="estimation-card">
+                    <div class="estimation-header">
+                        <span class="estimation-icon">📊</span>
+                        <span class="estimation-title">ƯỚC TÍNH HIỆU SUẤT</span>
+                    </div>
+                    <div class="estimation-grid">
+                        <div class="estimation-item">
+                            <div class="estimation-label">SỐ RUN (CHUNK)</div>
+                            <div class="estimation-value" id="estRuns">-</div>
+                        </div>
+                        <div class="estimation-item">
+                            <div class="estimation-label">SỐ PASS</div>
+                            <div class="estimation-value" id="estPass">-</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Control Section -->
             <section class="control-section hidden" id="controlSection">
                 <button class="btn btn-primary" id="sortBtn">
@@ -115,6 +165,16 @@
             <!-- Visualization Section -->
             <section class="visualization-section hidden" id="visualizationSection">
                 <h3 class="viz-title">Quá trình sắp xếp</h3>
+
+                <!-- Step Info - Ghi chú các bước -->
+                <div class="step-info" id="stepInfo">
+                    <div class="step-info-header">
+                        <span class="step-badge" id="stepBadge">Bước 0</span>
+                        <span class="step-phase" id="stepPhase">Chuẩn bị</span>
+                    </div>
+                    <p class="step-detail" id="stepDetail">Đang khởi tạo...</p>
+                </div>
+
                 <div class="viz-container" id="vizContainer"></div>
                 <div class="viz-controls">
                     <button class="btn btn-small" id="prevStepBtn">⏮ Trước</button>
@@ -143,13 +203,90 @@
 
             <!-- Result Section -->
             <section class="result-section hidden" id="resultSection">
-                <div class="result-icon">✅</div>
-                <h3>Sắp xếp hoàn tất!</h3>
-                <p class="result-stats" id="resultStats"></p>
-                <button class="btn btn-primary btn-large" id="downloadBtn">
-                    <span class="btn-icon">💾</span>
-                    Tải xuống tệp kết quả
-                </button>
+                <!-- Animated Check Icon -->
+                <div class="result-check-icon">
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                    </svg>
+                </div>
+
+                <h3>🎉 Sắp xếp hoàn tất!</h3>
+                <p class="result-subtitle">Dữ liệu đã được sắp xếp thành công với External Sort.</p>
+
+                <!-- Action Buttons -->
+                <div class="result-actions">
+                    <button class="btn btn-primary" id="downloadBtn">
+                        <span class="btn-icon">💾</span>
+                        Tải Binary (.bin)
+                    </button>
+                    <button class="btn btn-secondary" id="downloadTxtBtn">
+                        <span class="btn-icon">📄</span>
+                        Tải Text (.txt)
+                    </button>
+                    <button class="btn btn-secondary" id="newSortBtn">
+                        <span class="btn-icon">🔄</span>
+                        Làm Mới
+                    </button>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="result-stats-grid">
+                    <div class="stat-card stat-blue">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-label">TỔNG PHẦN TỬ</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-label">SỐ RUN</div>
+                        <div class="stat-value" id="statRuns">0</div>
+                    </div>
+                    <div class="stat-card stat-orange">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-label">SỐ BƯỚC</div>
+                        <div class="stat-value" id="statSteps">0</div>
+                    </div>
+                    <div class="stat-card stat-green">
+                        <div class="stat-icon">🔀</div>
+                        <div class="stat-label">SO SÁNH</div>
+                        <div class="stat-value" id="statComparisons">0</div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="result-info-row">
+                    <div class="info-box">
+                        <span class="info-box-icon">💾</span>
+                        <div>
+                            <div class="info-box-label">RAM BUFFER (M)</div>
+                            <div class="info-box-value" id="statRam">5 phần tử</div>
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <span class="info-box-icon">🔄</span>
+                        <div>
+                            <div class="info-box-label">K-WAY MERGE</div>
+                            <div class="info-box-value" id="statKWay">2-way</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Preview -->
+                <div class="result-preview">
+                    <h4>📋 Xem trước kết quả</h4>
+                    <div class="result-data" id="resultData"></div>
+                    <div class="result-minmax">
+                        <div class="minmax-box min">
+                            <span>↓ MIN</span>
+                            <span class="minmax-value" id="statMin">0</span>
+                        </div>
+                        <div class="minmax-box max">
+                            <span>↑ MAX</span>
+                            <span class="minmax-value" id="statMax">0</span>
+                        </div>
+                    </div>
+                </div>
             </section>
         </div>
 
@@ -157,23 +294,23 @@
         <div class="glass-card info-card">
             <!-- External Sort là gì -->
             <div class="info-header">
-                <span class="info-icon">❓</span>
-                <h3>External Sort là gì?</h3>
+                <span class="info-icon">📖</span>
+                <h3>Tìm hiểu về External Sort</h3>
             </div>
             <p class="info-description">
-                <strong>External Sort</strong> (Sắp xếp ngoại) là thuật toán sắp xếp dữ liệu
-                <em>lớn hơn bộ nhớ RAM</em>. Dữ liệu được chia thành các
-                <strong>Run</strong> nhỏ, sắp xếp trong RAM, rồi gộp lại bằng <strong>K-Way Merge</strong>.
+                Khi dữ liệu <em>vượt quá dung lượng RAM</em>, ta không thể sắp xếp trực tiếp trong bộ nhớ.
+                <strong>External Sort</strong> giải quyết vấn đề này bằng cách chia nhỏ dữ liệu thành các
+                <strong>Run</strong> (khối con), xử lý từng phần rồi <strong>trộn (Merge)</strong> chúng lại.
             </p>
 
             <div class="phase-buttons">
                 <div class="phase-btn">
-                    <span class="phase-number">1</span>
-                    Phase 1: Tạo Run
+                    <span class="phase-number">①</span>
+                    Giai đoạn 1: Tạo Run
                 </div>
                 <div class="phase-btn phase-primary">
-                    <span class="phase-number">2</span>
-                    Phase 2: K-Way Merge
+                    <span class="phase-number">②</span>
+                    Giai đoạn 2: Trộn K-Way
                 </div>
             </div>
 
@@ -181,7 +318,7 @@
             <div class="accordion">
                 <div class="accordion-item">
                     <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
-                        <span>⚙️ Cách External Sort Hoạt Động</span>
+                        <span>⚙️ Nguyên lý hoạt động</span>
                         <span class="accordion-icon">▼</span>
                     </button>
                     <div class="accordion-content">
@@ -189,22 +326,25 @@
                             <div class="step">
                                 <div class="step-number">1</div>
                                 <div class="step-content">
-                                    <strong>Chia (Divide)</strong>
-                                    <p>Chia dữ liệu thành các "runs" nhỏ vừa với bộ nhớ</p>
+                                    <strong>Phân chia (Split)</strong>
+                                    <p>Đọc từng phần dữ liệu vừa với RAM (M phần tử), tạo thành các Run riêng
+                                        biệt</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">2</div>
                                 <div class="step-content">
-                                    <strong>Sắp xếp (Sort)</strong>
-                                    <p>Sắp xếp từng run trong bộ nhớ bằng QuickSort/MergeSort</p>
+                                    <strong>Sắp xếp nội bộ</strong>
+                                    <p>Mỗi Run được sắp xếp trong RAM bằng thuật toán nhanh (QuickSort,
+                                        Insertion Sort)
+                                    </p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">3</div>
                                 <div class="step-content">
-                                    <strong>Trộn (Merge)</strong>
-                                    <p>K-Way Merge: trộn k runs đã sắp xếp thành một mảng hoàn chỉnh</p>
+                                    <strong>Trộn đa chiều (K-Way)</strong>
+                                    <p>Lấy K runs, so sánh phần tử đầu mỗi run, chọn nhỏ nhất ghi ra output</p>
                                 </div>
                             </div>
                         </div>
@@ -213,17 +353,47 @@
 
                 <div class="accordion-item">
                     <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
-                        <span>💡 Ví Dụ & Trường Hợp Đặc Biệt</span>
+                        <span>📊 Phân tích độ phức tạp</span>
                         <span class="accordion-icon">▼</span>
                     </button>
                     <div class="accordion-content">
                         <ul class="example-list">
-                            <li><strong>Ví dụ:</strong> Sắp xếp 1TB dữ liệu với 8GB RAM → Chia thành ~128 runs, mỗi run
-                                8GB</li>
-                            <li><strong>Ứng dụng:</strong> Database indexing, Log file processing, Big Data analytics
+                            <li><strong>Thời gian:</strong> O(N × log N) - tương đương các thuật toán sắp xếp
+                                tối ưu
                             </li>
-                            <li><strong>Độ phức tạp:</strong> O(n log n) với n là số phần tử</li>
-                            <li><strong>Ưu điểm:</strong> Xử lý được dữ liệu lớn hơn RAM, I/O hiệu quả</li>
+                            <li><strong>Bộ nhớ:</strong> O(M) - chỉ cần M phần tử trong RAM cùng lúc</li>
+                            <li><strong>I/O:</strong> O(N/B × log<sub>K</sub>(N/M)) - với B là kích thước block
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                        <span>💡 Ví dụ minh họa</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <ul class="example-list">
+                            <li><strong>Input:</strong> [8, 3, 7, 1, 5, 9, 2, 6, 4] với M=3, K=2</li>
+                            <li><strong>Bước 1:</strong> Tạo Run → [3,7,8], [1,5,9], [2,4,6]</li>
+                            <li><strong>Bước 2:</strong> Merge 2 run đầu → [1,3,5,7,8,9]</li>
+                            <li><strong>Bước 3:</strong> Merge với run còn lại → [1,2,3,4,5,6,7,8,9] ✅</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                        <span>⚠️ Lưu ý quan trọng</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <ul class="example-list">
+                            <li><strong>M lớn hơn:</strong> Ít run hơn → Ít lần merge → Nhanh hơn</li>
+                            <li><strong>K lớn hơn:</strong> Merge nhiều run cùng lúc → Ít pass hơn</li>
+                            <li><strong>Dữ liệu đã sắp:</strong> Vẫn tạo run nhưng merge hiệu quả hơn</li>
+                            <li><strong>Ứng dụng:</strong> Database, Big Data, xử lý log file lớn</li>
                         </ul>
                     </div>
                 </div>
@@ -231,9 +401,7 @@
         </div>
     </main>
 
-    <footer class="footer">
-        <p>Được xây dựng với ❤️ cho DSA++ | Binary File Sorter v1.0</p>
-    </footer>
+
 
     <script src="js/app.js"></script>
 </body>

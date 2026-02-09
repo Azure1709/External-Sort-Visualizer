@@ -66,12 +66,12 @@ function formatFileSize(bytes) {
 }
 
 /**
- * Tạo dữ liệu test ngẫu nhiên (số nguyên)
+ * Tạo dữ liệu test ngẫu nhiên (số thực 8 bytes)
  */
 function generateTestData(count, min = 0, max = 100) {
     const data = new Float64Array(count);
     for (let i = 0; i < count; i++) {
-        data[i] = Math.floor(min + Math.random() * (max - min + 1));
+        data[i] = min + Math.random() * (max - min);
     }
     return data;
 }
@@ -345,8 +345,81 @@ class BinaryFileSorterApp {
         this.nextStepBtn = document.getElementById('nextStepBtn');
         this.speedSlider = document.getElementById('speedSlider');
 
+        // Step Info elements
+        this.stepBadge = document.getElementById('stepBadge');
+        this.stepPhase = document.getElementById('stepPhase');
+        this.stepDetail = document.getElementById('stepDetail');
+
         this.resultStats = document.getElementById('resultStats');
         this.downloadBtn = document.getElementById('downloadBtn');
+
+        // New result section elements
+        this.downloadTxtBtn = document.getElementById('downloadTxtBtn');
+        this.newSortBtn = document.getElementById('newSortBtn');
+        this.statTotal = document.getElementById('statTotal');
+        this.statRuns = document.getElementById('statRuns');
+        this.statSteps = document.getElementById('statSteps');
+        this.statComparisons = document.getElementById('statComparisons');
+        this.statRam = document.getElementById('statRam');
+        this.statKWay = document.getElementById('statKWay');
+        this.resultData = document.getElementById('resultData');
+        this.statMin = document.getElementById('statMin');
+        this.statMax = document.getElementById('statMax');
+
+        // Stats tracking
+        this.comparisonCount = 0;
+        this.numRuns = 0;
+
+        // Config section elements
+        this.configSection = document.getElementById('configSection');
+        this.ramSlider = document.getElementById('ramSlider');
+        this.ramValue = document.getElementById('ramValue');
+        this.kWaySlider = document.getElementById('kWaySlider');
+        this.kWayValue = document.getElementById('kWayValue');
+        this.estRuns = document.getElementById('estRuns');
+        this.estPass = document.getElementById('estPass');
+
+        // Config values
+        this.ramLimit = 5;
+        this.kWay = 2;
+
+        // New visualization page elements
+        this.backToConfigBtn = document.getElementById('backToConfigBtn');
+        this.statusDot = document.getElementById('statusDot');
+        this.statusText = document.getElementById('statusText');
+        this.currentPhase = document.getElementById('currentPhase');
+        this.speedValue = document.getElementById('speedValue');
+        this.resetBtn2 = document.getElementById('resetBtn2');
+
+        // Live stats
+        this.statStepLive = document.getElementById('statStepLive');
+        this.statCompareLive = document.getElementById('statCompareLive');
+        this.statReadLive = document.getElementById('statReadLive');
+        this.statWriteLive = document.getElementById('statWriteLive');
+        this.runsCreated = document.getElementById('runsCreated');
+
+        // Banner
+        this.bannerTitle = document.getElementById('bannerTitle');
+        this.bannerDesc = document.getElementById('bannerDesc');
+
+        // Inspector
+        this.inspectorContent = document.getElementById('inspectorContent');
+
+        // Phase elements
+        this.inputFileBox = document.getElementById('inputFileBox');
+        this.ramBufferBox = document.getElementById('ramBufferBox');
+        this.ramElements = document.getElementById('ramElements');
+        this.ramInfo = document.getElementById('ramInfo');
+        this.outputRunsBox = document.getElementById('outputRunsBox');
+        this.phase1Count = document.getElementById('phase1Count');
+        this.phase2Count = document.getElementById('phase2Count');
+        this.mergeArea = document.getElementById('mergeArea');
+        this.outputContent = document.getElementById('outputContent');
+        this.outputCount = document.getElementById('outputCount');
+
+        // Tracking
+        this.liveStats = { step: 0, compare: 0, read: 0, write: 0 };
+        this.outputRuns = [];
     }
 
     _bindEvents() {
@@ -374,12 +447,45 @@ class BinaryFileSorterApp {
         this.sortBtn.addEventListener('click', () => this._startSort());
         this.resetBtn.addEventListener('click', () => this._reset());
         this.downloadBtn.addEventListener('click', () => this._downloadResult());
+        if (this.downloadTxtBtn) this.downloadTxtBtn.addEventListener('click', () => this._downloadResultTxt());
+        if (this.newSortBtn) this.newSortBtn.addEventListener('click', () => this._reset());
 
         // Step controls
         this.prevStepBtn.addEventListener('click', () => this._prevStep());
         this.nextStepBtn.addEventListener('click', () => this._nextStep());
         this.playPauseBtn.addEventListener('click', () => this._togglePlayPause());
         this.speedSlider.addEventListener('input', (e) => { if (this.visualizer) this.visualizer.setSpeed(parseInt(e.target.value)); });
+
+        // Config sliders
+        if (this.ramSlider) {
+            this.ramSlider.addEventListener('input', (e) => {
+                this.ramLimit = parseInt(e.target.value);
+                this.ramValue.textContent = this.ramLimit;
+                this._updateEstimation();
+            });
+        }
+        if (this.kWaySlider) {
+            this.kWaySlider.addEventListener('input', (e) => {
+                this.kWay = parseInt(e.target.value);
+                this.kWayValue.textContent = this.kWay;
+                this._updateEstimation();
+            });
+        }
+
+        // Visualization page events
+        if (this.backToConfigBtn) {
+            this.backToConfigBtn.addEventListener('click', () => this._backToConfig());
+        }
+        if (this.resetBtn2) {
+            this.resetBtn2.addEventListener('click', () => this._resetVisualization());
+        }
+        if (this.speedSlider) {
+            this.speedSlider.addEventListener('input', (e) => {
+                const speed = parseInt(e.target.value);
+                const percent = Math.round((speed / 10) * 100);
+                if (this.speedValue) this.speedValue.textContent = `${percent}%`;
+            });
+        }
     }
 
     _switchTab(tabName) {
@@ -439,13 +545,33 @@ class BinaryFileSorterApp {
         });
 
         this._showElement(this.dataPreview);
+        this._showElement(this.configSection);
         this._showElement(this.controlSection);
         this._hideElement(this.progressSection);
         this._hideElement(this.visualizationSection);
         this._hideElement(this.resultSection);
 
+        this._updateEstimation();
+
         this.visualizer = new SortVisualizer(this.vizContainer);
         this.visualizer.setSpeed(parseInt(this.speedSlider.value));
+    }
+
+    _updateEstimation() {
+        if (!this.originalData) return;
+
+        const n = this.originalData.length;
+        const m = this.ramLimit;
+        const k = this.kWay;
+
+        // Số run = ceil(n / m)
+        const numRuns = Math.ceil(n / m);
+
+        // Số pass = ceil(log_k(numRuns))
+        const numPass = numRuns <= 1 ? 0 : Math.ceil(Math.log(numRuns) / Math.log(k));
+
+        if (this.estRuns) this.estRuns.textContent = numRuns;
+        if (this.estPass) this.estPass.textContent = numPass;
     }
 
     async _startSort() {
@@ -463,20 +589,22 @@ class BinaryFileSorterApp {
 
         try {
             this.sortedData = await this.sorter.sort(this.originalData, {
-                runSize: DEFAULT_RUN_SIZE,
+                runSize: this.ramLimit,
                 recordSteps: true,
                 onProgress: (progress, msg) => this._updateProgress(progress, msg),
                 onVisualization: async (step) => {
                     this.steps.push({ ...step });
+                    // Count runs and comparisons
+                    if (step.type === 'split') this.numRuns = step.runs.length;
+                    if (step.type === 'merge') this.comparisonCount += step.result.length;
                     await this.visualizer.update(step);
                     await this._delay(this.visualizer.animationSpeed);
                 }
             });
 
-            const duration = ((performance.now() - startTime) / 1000).toFixed(2);
             this._hideElement(this.progressSection);
             this._showElement(this.resultSection);
-            this.resultStats.textContent = `Đã sắp xếp ${this.sortedData.length} phần tử trong ${duration} giây`;
+            this._displayResultStats();
             this.currentStep = this.steps.length - 1;
             this._updateStepControls();
         } catch (error) {
@@ -531,6 +659,97 @@ class BinaryFileSorterApp {
     _updateStepControls() {
         this.prevStepBtn.disabled = this.currentStep <= 0;
         this.nextStepBtn.disabled = this.currentStep >= this.steps.length - 1;
+        this._updateStepInfo();
+    }
+
+    _updateStepInfo() {
+        if (this.steps.length === 0) return;
+
+        const step = this.steps[this.currentStep];
+        this.stepBadge.textContent = `Bước ${this.currentStep + 1}/${this.steps.length}`;
+
+        switch (step.type) {
+            case 'split':
+                this.stepPhase.textContent = '📦 Giai đoạn 1: Tạo Run';
+                const numRuns = step.runs.length;
+                const runSizes = step.runs.map(r => r.length).join(', ');
+                this.stepDetail.textContent = `Chia dữ liệu thành ${numRuns} run. Kích thước mỗi run: [${runSizes}] phần tử. Mỗi run sẽ được sắp xếp độc lập trong RAM.`;
+                break;
+
+            case 'sort':
+                this.stepPhase.textContent = '🔄 Đang sắp xếp Run';
+                const runIdx = step.activeRun + 1;
+                const runData = step.runs[step.activeRun];
+                const sortedPreview = runData.slice(0, 5).map(n => n.toFixed(1)).join(', ');
+                this.stepDetail.textContent = `Sắp xếp Run ${runIdx}/${step.runs.length} trong bộ nhớ. Kết quả: [${sortedPreview}${runData.length > 5 ? '...' : ''}]. Dùng thuật toán sắp xếp nội bộ (QuickSort/InsertionSort).`;
+                break;
+
+            case 'merge':
+                this.stepPhase.textContent = '🔀 Giai đoạn 2: K-Way Merge';
+                const leftPreview = step.left.slice(0, 3).map(n => n.toFixed(1)).join(', ');
+                const rightPreview = step.right.slice(0, 3).map(n => n.toFixed(1)).join(', ');
+                const resultPreview = step.result.slice(-3).map(n => n.toFixed(1)).join(', ');
+                this.stepDetail.textContent = `Đang trộn 2 run: [${leftPreview}...] và [${rightPreview}...]. So sánh phần tử đầu mỗi run, chọn nhỏ hơn → Output: [...${resultPreview}]`;
+                break;
+
+            case 'complete':
+                this.stepPhase.textContent = '✅ Hoàn tất!';
+                const sortedData = step.runs[0];
+                const firstThree = sortedData.slice(0, 3).map(n => n.toFixed(1)).join(', ');
+                const lastThree = sortedData.slice(-3).map(n => n.toFixed(1)).join(', ');
+                this.stepDetail.textContent = `Sắp xếp hoàn tất! Kết quả: [${firstThree}, ... , ${lastThree}]. Tổng cộng ${sortedData.length} phần tử đã được sắp xếp tăng dần.`;
+                break;
+
+            default:
+                this.stepPhase.textContent = '⏳ Đang xử lý';
+                this.stepDetail.textContent = 'Đang thực hiện bước tiếp theo...';
+        }
+    }
+
+    _displayResultStats() {
+        if (!this.sortedData) return;
+
+        const data = Array.from(this.sortedData);
+
+        // Update stat values
+        if (this.statTotal) this.statTotal.textContent = data.length;
+        if (this.statRuns) this.statRuns.textContent = this.numRuns || Math.ceil(data.length / DEFAULT_RUN_SIZE);
+        if (this.statSteps) this.statSteps.textContent = this.steps.length;
+        if (this.statComparisons) this.statComparisons.textContent = this.comparisonCount;
+        if (this.statRam) this.statRam.textContent = `${DEFAULT_RUN_SIZE} phần tử`;
+        if (this.statKWay) this.statKWay.textContent = '2-way';
+
+        // Min/Max
+        const minVal = Math.min(...data);
+        const maxVal = Math.max(...data);
+        if (this.statMin) this.statMin.textContent = minVal.toFixed(2);
+        if (this.statMax) this.statMax.textContent = maxVal.toFixed(2);
+
+        // Result data preview
+        if (this.resultData) {
+            this.resultData.innerHTML = '';
+            const previewCount = Math.min(data.length, 30);
+            for (let i = 0; i < previewCount; i++) {
+                const item = document.createElement('span');
+                item.className = 'data-item';
+                item.textContent = data[i].toFixed(2);
+                this.resultData.appendChild(item);
+            }
+            if (data.length > previewCount) {
+                const more = document.createElement('span');
+                more.className = 'data-item';
+                more.style.background = 'rgba(255,255,255,0.2)';
+                more.textContent = `+${data.length - previewCount} more`;
+                this.resultData.appendChild(more);
+            }
+        }
+    }
+
+    _downloadResultTxt() {
+        if (!this.sortedData) return;
+        const textContent = Array.from(this.sortedData).map(n => n.toFixed(6)).join('\n');
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        downloadFile(blob, `${this.originalFileName}_sorted.txt`);
     }
 
     _downloadResult() {
@@ -546,11 +765,14 @@ class BinaryFileSorterApp {
         this.sortedData = null;
         this.steps = [];
         this.currentStep = 0;
+        this.comparisonCount = 0;
+        this.numRuns = 0;
 
         this.fileInput.value = '';
         this.manualInput.value = '';
 
         this._hideElement(this.dataPreview);
+        this._hideElement(this.configSection);
         this._hideElement(this.controlSection);
         this._hideElement(this.progressSection);
         this._hideElement(this.visualizationSection);
@@ -562,9 +784,101 @@ class BinaryFileSorterApp {
         this.playPauseBtn.innerHTML = '▶ Chạy';
     }
 
-    _showElement(el) { el.classList.remove('hidden'); el.classList.add('fade-in'); }
-    _hideElement(el) { el.classList.add('hidden'); }
+    _showElement(el) { if (el) { el.classList.remove('hidden'); el.classList.add('fade-in'); } }
+    _hideElement(el) { if (el) el.classList.add('hidden'); }
     _delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+    _backToConfig() {
+        this._hideElement(this.visualizationSection);
+        this._showElement(this.dataPreview);
+        this._showElement(this.configSection);
+        this._showElement(this.controlSection);
+    }
+
+    _resetVisualization() {
+        this.isPlaying = false;
+        this.currentStep = 0;
+        this.liveStats = { step: 0, compare: 0, read: 0, write: 0 };
+        this.outputRuns = [];
+        this._updateLiveStats();
+        this._updateBanner('🚀', 'KHỞI TẠO', 'Sẵn sàng chạy mô phỏng.');
+        this._clearInspector();
+        this._clearPhaseBoxes();
+        if (this.playPauseBtn) this.playPauseBtn.innerHTML = '▶ Play';
+    }
+
+    _updateLiveStats() {
+        if (this.statStepLive) this.statStepLive.textContent = this.liveStats.step;
+        if (this.statCompareLive) this.statCompareLive.textContent = this.liveStats.compare;
+        if (this.statReadLive) this.statReadLive.textContent = this.liveStats.read;
+        if (this.statWriteLive) this.statWriteLive.textContent = this.liveStats.write;
+        if (this.runsCreated) this.runsCreated.textContent = this.outputRuns.length;
+    }
+
+    _updateBanner(icon, title, desc) {
+        const banner = document.querySelector('.viz-banner');
+        if (banner) {
+            banner.querySelector('.banner-icon').textContent = icon;
+            if (this.bannerTitle) this.bannerTitle.textContent = title;
+            if (this.bannerDesc) this.bannerDesc.textContent = desc;
+        }
+    }
+
+    _addInspectorLog(message) {
+        if (!this.inspectorContent) return;
+        const placeholder = this.inspectorContent.querySelector('.inspector-placeholder');
+        if (placeholder) placeholder.remove();
+
+        const line = document.createElement('p');
+        line.style.margin = '2px 0';
+        line.style.color = '#60a5fa';
+        line.textContent = `> ${message}`;
+        this.inspectorContent.appendChild(line);
+        this.inspectorContent.scrollTop = this.inspectorContent.scrollHeight;
+    }
+
+    _clearInspector() {
+        if (this.inspectorContent) {
+            this.inspectorContent.innerHTML = '<p class="inspector-placeholder">Chưa có thao tác nào</p>';
+        }
+    }
+
+    _clearPhaseBoxes() {
+        if (this.ramElements) this.ramElements.innerHTML = '';
+        if (this.ramInfo) this.ramInfo.textContent = 'Insertion Sort - 0 elements';
+        if (this.inputFileBox) this.inputFileBox.innerHTML = '<div class="box-placeholder"><span>ĐỌC</span><span>→</span></div>';
+        if (this.outputRunsBox) this.outputRunsBox.innerHTML = '<div class="box-placeholder"><span>GHI</span><span>→</span></div>';
+        if (this.phase1Count) this.phase1Count.textContent = '0 runs';
+        if (this.phase2Count) this.phase2Count.textContent = '0 runs';
+        if (this.outputContent) this.outputContent.innerHTML = '';
+        if (this.outputCount) this.outputCount.textContent = '0 phần tử';
+    }
+
+    _updateRamElements(data, status = 'normal') {
+        if (!this.ramElements) return;
+        this.ramElements.innerHTML = '';
+        data.forEach(val => {
+            const el = document.createElement('span');
+            el.className = `ram-element ${status}`;
+            el.textContent = Number.isInteger(val) ? val : val.toFixed(1);
+            this.ramElements.appendChild(el);
+        });
+        if (this.ramInfo) this.ramInfo.textContent = `Insertion Sort - ${data.length} elements`;
+    }
+
+    _addOutputRun(data, runIndex) {
+        if (!this.outputRunsBox) return;
+        const placeholder = this.outputRunsBox.querySelector('.box-placeholder');
+        if (placeholder) this.outputRunsBox.innerHTML = '';
+
+        const runEl = document.createElement('div');
+        runEl.className = 'output-run';
+        runEl.style.cssText = 'background: rgba(16,185,129,0.2); padding: 4px 8px; border-radius: 4px; margin: 2px; font-size: 0.75rem;';
+        runEl.textContent = `Run ${runIndex + 1}: [${data.slice(0, 3).map(v => v.toFixed(1)).join(', ')}${data.length > 3 ? '...' : ''}]`;
+        this.outputRunsBox.appendChild(runEl);
+
+        if (this.phase1Count) this.phase1Count.textContent = `${runIndex + 1} runs`;
+    }
 }
 
 // Initialize app
