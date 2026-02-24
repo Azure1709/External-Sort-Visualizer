@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -13,395 +13,414 @@
 </head>
 
 <body>
-    <div class="background-gradient"></div>
-
-    <main class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1 class="title">
-                <span class="icon">📊</span>
-                External Sort Visualizer
-            </h1>
-            <p class="subtitle">Minh họa thuật toán External Merge Sort với số thực 8 bytes</p>
-        </header>
-
-        <!-- Main Card -->
-        <div class="glass-card main-card">
-            <!-- Input Section -->
-            <section class="input-section" id="inputSection">
-                <h2 class="section-title">📊 Nhập dữ liệu</h2>
-
-                <!-- Tab buttons -->
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="random">🎲 Random</button>
-                    <button class="tab-btn" data-tab="manual">✏️ Nhập tay</button>
-                    <button class="tab-btn" data-tab="file">📁 Tải file</button>
+    <!-- ==================== HEADER ==================== -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+                <div class="logo-text">
+                    <span class="logo-title">External Sort Visualizer</span>
+                    <span class="logo-subtitle">Minh họa thuật toán External Merge Sort với số thực 8 bytes</span>
                 </div>
+            </div>
+        </div>
+        <div class="header-center">
+            <nav class="step-nav">
+                <button class="step-nav-btn active" data-step="config">
+                    <span class="step-num">1</span>
+                    Cấu hình
+                </button>
+                <button class="step-nav-btn" data-step="simulation">
+                    <span class="step-num">2</span>
+                    Mô phỏng
+                </button>
+                <button class="step-nav-btn" data-step="result">
+                    <span class="step-num">3</span>
+                    Kết quả
+                </button>
+            </nav>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" id="themeToggle" title="Chuyển đổi giao diện">
+                <span class="theme-icon">🌙</span>
+                THEME
+            </button>
+            <button class="btn-new-session" id="newSessionBtn">
+                + Phiên làm việc mới
+            </button>
+        </div>
+    </header>
 
-                <!-- Random Tab -->
-                <div class="tab-content active" id="randomTab">
-                    <div class="random-controls">
-                        <div class="input-group">
-                            <label>Số lượng phần tử:</label>
-                            <input type="number" id="randomCount" value="20" min="2" max="100">
+    <!-- ==================== MAIN LAYOUT ==================== -->
+    <main class="app-main">
+        <!-- ========== LEFT SIDEBAR ========== -->
+        <aside class="sidebar sidebar-left">
+            <!-- Thông tin tệp -->
+            <div class="card" id="fileInfoCard">
+                <div class="card-header">
+                    <span class="card-icon">📄</span>
+                    <span class="card-title">TỆP ĐÃ TẢI</span>
+                    <span class="badge badge-green" id="bufferBadge" style="display:none;">BỘ NHỚ TẠM</span>
+                </div>
+                <div class="card-body" id="fileInfoBody">
+                    <p class="file-name" id="fileName">Chưa có tệp</p>
+                    <div class="file-meta" id="fileMeta" style="display:none;">
+                        <span id="fileSize">0 KB</span>
+                        <span id="fileElements">0 doubles</span>
+                    </div>
+                    <!-- Input tabs -->
+                    <div class="input-tabs">
+                        <div class="input-tab-buttons">
+                            <button class="input-tab-btn active" data-input-tab="random">🎲 Random</button>
+                            <button class="input-tab-btn" data-input-tab="manual">✏️ Nhập tay</button>
+                            <button class="input-tab-btn" data-input-tab="file">📁 Tải tệp</button>
                         </div>
-                        <div class="input-group">
-                            <label>Giá trị nhỏ nhất:</label>
-                            <input type="number" id="randomMin" value="1" step="0.1">
+                        <!-- Random -->
+                        <div class="input-tab-content active" id="inputRandom">
+                            <div class="mini-form">
+                                <label>Số lượng: <input type="number" id="randomCount" value="20" min="2"
+                                        max="100"></label>
+                                <label>Min: <input type="number" id="randomMin" value="1" step="0.1"></label>
+                                <label>Max: <input type="number" id="randomMax" value="100" step="0.1"></label>
+                                <button class="btn btn-primary btn-sm" id="generateBtn">🎲 Tạo dãy ngẫu nhiên</button>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>Giá trị lớn nhất:</label>
-                            <input type="number" id="randomMax" value="100" step="0.1">
+                        <!-- Manual -->
+                        <div class="input-tab-content" id="inputManual">
+                            <textarea id="manualInput" placeholder="Ví dụ: 23 87 15 67 34" rows="3"></textarea>
+                            <button class="btn btn-primary btn-sm" id="parseBtn">✅ Sử dụng dãy này</button>
                         </div>
-                        <button class="btn btn-primary" id="generateBtn">
-                            <span class="btn-icon">🎲</span>
-                            Tạo dãy số ngẫu nhiên
+                        <!-- File -->
+                        <div class="input-tab-content" id="inputFile">
+                            <div class="upload-zone-mini" id="uploadZone">
+                                <p>📁 Kéo thả hoặc <label class="upload-link" for="fileInput">chọn tệp</label></p>
+                                <input type="file" id="fileInput" accept=".bin,.dat" hidden>
+                                <small>Hỗ trợ: .bin, .dat (8-bytes Double)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thống kê -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📈</span>
+                    <span class="card-title">THỐNG SỐ</span>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">BƯỚC THỰC HIỆN</span>
+                            <span class="stat-value" id="statSteps">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">PHÉP SO SÁNH</span>
+                            <span class="stat-value stat-highlight" id="statComparisons">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">DISK I/O</span>
+                            <span class="stat-value" id="statDiskIO">0 MB/s</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">BỘ NHỚ</span>
+                            <span class="stat-value" id="statMemory">0 MB</span>
+                        </div>
+                    </div>
+                    <div class="stat-minmax">
+                        <div class="stat-row">
+                            <span class="stat-label">GIÁ TRỊ NHỎ NHẤT</span>
+                            <span class="stat-value" id="statMin">—</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">GIÁ TRỊ LỚN NHẤT</span>
+                            <span class="stat-value" id="statMax">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kết quả -->
+            <div class="card" id="resultCard" style="display:none;">
+                <div class="card-header">
+                    <span class="card-icon">📦</span>
+                    <span class="card-title">KẾT QUẢ</span>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-result" id="downloadBtn">
+                        <span>💾</span> Tải xuống .bin
+                    </button>
+                    <button class="btn btn-result" id="downloadTxtBtn">
+                        <span>📄</span> Xuất tệp nhật ký .txt
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========== CENTER AREA ========== -->
+        <section class="center-area">
+            <!-- === TAB: CẤU HÌNH === -->
+            <div class="tab-panel active" id="panelConfig">
+                <div class="config-container">
+                    <h2 class="panel-title">⚙️ Cấu hình thuật toán</h2>
+
+                    <!-- Data Preview -->
+                    <div class="data-preview-box hidden" id="dataPreview">
+                        <h3>📋 Dữ liệu đầu vào (<span id="elementCount">0</span> phần tử)</h3>
+                        <div class="data-display" id="dataDisplay"></div>
+                    </div>
+
+                    <!-- Config Grid -->
+                    <div class="config-grid">
+                        <div class="config-card">
+                            <div class="config-header">
+                                <span class="config-icon">💾</span>
+                                <span class="config-title">Giới hạn RAM (M)</span>
+                                <span class="config-badge" id="ramValue">5</span>
+                                <span class="config-unit">phần tử</span>
+                            </div>
+                            <input type="range" class="config-slider" id="ramSlider" min="2" max="20" value="5">
+                            <p class="config-hint">💡 Số lượng phần tử tối đa chứa trong bộ nhớ chính cùng lúc.</p>
+                        </div>
+                        <div class="config-card">
+                            <div class="config-header">
+                                <span class="config-icon">🔀</span>
+                                <span class="config-title">Số luồng Merge (K)</span>
+                                <span class="config-badge" id="kWayValue">2</span>
+                                <span class="config-unit">run</span>
+                            </div>
+                            <input type="range" class="config-slider" id="kWaySlider" min="2" max="8" value="2">
+                            <p class="config-hint">💡 Số run được merge cùng lúc trong mỗi pass.</p>
+                        </div>
+                    </div>
+
+                    <!-- Estimation -->
+                    <div class="estimation-box">
+                        <div class="estimation-header">
+                            <span>📊</span>
+                            <span>ƯỚC TÍNH HIỆU SUẤT</span>
+                        </div>
+                        <div class="estimation-grid">
+                            <div class="estimation-item">
+                                <div class="estimation-label">SỐ RUN (CHUNK)</div>
+                                <div class="estimation-value" id="estRuns">—</div>
+                            </div>
+                            <div class="estimation-item">
+                                <div class="estimation-label">SỐ PASS</div>
+                                <div class="estimation-value" id="estPass">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Start button -->
+                    <div class="config-actions">
+                        <button class="btn btn-primary btn-lg" id="sortBtn" disabled>
+                            ⚡ Bắt đầu sắp xếp
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Manual Tab -->
-                <div class="tab-content" id="manualTab">
-                    <div class="manual-input">
-                        <p class="input-hint">Nhập các số cách nhau bằng dấu cách hoặc dấu phẩy:</p>
-                        <textarea id="manualInput" placeholder="Ví dụ: 23 87 15 67 34 92 5 77 11 42"></textarea>
-                        <button class="btn btn-primary" id="parseBtn">
-                            <span class="btn-icon">✅</span>
-                            Sử dụng dãy số này
-                        </button>
+            <!-- === TAB: MÔ PHỎNG === -->
+            <div class="tab-panel" id="panelSimulation">
+                <div class="viz-header">
+                    <div class="viz-header-left">
+                        <h2 class="panel-title">Mô phỏng thời gian thực</h2>
+                        <p class="viz-subtitle" id="vizSubtitle">Đang thực hiện Merge Sort: Phân đoạn (Partitioning)</p>
+                    </div>
+                    <div class="viz-header-right">
+                        <button class="viz-view-btn active" title="Biểu đồ cột">📊</button>
+                        <button class="viz-view-btn" title="Bảng dữ liệu">📋</button>
+                        <button class="viz-view-btn" id="fullscreenBtn" title="Toàn màn hình">⛶</button>
                     </div>
                 </div>
 
-                <!-- File Tab -->
-                <div class="tab-content" id="fileTab">
-                    <div class="upload-zone" id="uploadZone">
-                        <div class="upload-icon">📁</div>
-                        <h3>Kéo thả tệp vào đây</h3>
-                        <p>hoặc</p>
-                        <label class="upload-btn" for="fileInput">Chọn tệp nhị phân</label>
-                        <input type="file" id="fileInput" accept=".bin,.dat" hidden>
-                        <p class="upload-hint">Hỗ trợ: .bin, .dat (số thực 8-bytes Double)</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Data Preview -->
-            <section class="data-preview hidden" id="dataPreview">
-                <h3>📋 Dữ liệu đầu vào (<span id="elementCount">0</span> phần tử)</h3>
-                <div class="data-display" id="dataDisplay"></div>
-            </section>
-
-            <!-- Algorithm Config -->
-            <section class="config-section hidden" id="configSection">
-                <h3>⚙️ Cấu hình thuật toán</h3>
-
-                <div class="config-grid">
-                    <!-- RAM Limit -->
-                    <div class="config-card">
-                        <div class="config-header">
-                            <span class="config-icon">💾</span>
-                            <span class="config-title">Giới hạn RAM (M)</span>
-                            <span class="config-value" id="ramValue">5</span>
-                            <span class="config-unit">phần tử</span>
-                        </div>
-                        <input type="range" class="config-slider slider-blue" id="ramSlider" min="2" max="20" value="5">
-                        <p class="config-hint">💡 Số lượng phần tử tối đa có thể chứa trong bộ nhớ chính cùng
-                            lúc.</p>
-                    </div>
-
-                    <!-- K-Way Merge -->
-                    <div class="config-card">
-                        <div class="config-header">
-                            <span class="config-icon">🔀</span>
-                            <span class="config-title">Số luồng Merge (K)</span>
-                            <span class="config-value" id="kWayValue">2</span>
-                            <span class="config-unit">run</span>
-                        </div>
-                        <input type="range" class="config-slider slider-orange" id="kWaySlider" min="2" max="8"
-                            value="2">
-                        <p class="config-hint">💡 Số run được merge cùng lúc trong mỗi pass.</p>
-                    </div>
-                </div>
-
-                <!-- Performance Estimation -->
-                <div class="estimation-card">
-                    <div class="estimation-header">
-                        <span class="estimation-icon">📊</span>
-                        <span class="estimation-title">ƯỚC TÍNH HIỆU SUẤT</span>
-                    </div>
-                    <div class="estimation-grid">
-                        <div class="estimation-item">
-                            <div class="estimation-label">SỐ RUN (CHUNK)</div>
-                            <div class="estimation-value" id="estRuns">-</div>
-                        </div>
-                        <div class="estimation-item">
-                            <div class="estimation-label">SỐ PASS</div>
-                            <div class="estimation-value" id="estPass">-</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Control Section -->
-            <section class="control-section hidden" id="controlSection">
-                <button class="btn btn-primary" id="sortBtn">
-                    <span class="btn-icon">⚡</span>
-                    Bắt đầu sắp xếp
-                </button>
-                <button class="btn btn-secondary" id="resetBtn">
-                    <span class="btn-icon">🔄</span>
-                    Chọn tệp khác
-                </button>
-            </section>
-
-            <!-- Progress Section -->
-            <section class="progress-section hidden" id="progressSection">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <p class="progress-text" id="progressText">Đang xử lý...</p>
-            </section>
-
-            <!-- Visualization Section -->
-            <section class="visualization-section hidden" id="visualizationSection">
-                <h3 class="viz-title">Quá trình sắp xếp</h3>
-
-                <!-- Step Info - Ghi chú các bước -->
+                <!-- Step Info -->
                 <div class="step-info" id="stepInfo">
-                    <div class="step-info-header">
-                        <span class="step-badge" id="stepBadge">Bước 0</span>
-                        <span class="step-phase" id="stepPhase">Chuẩn bị</span>
-                    </div>
+                    <span class="step-badge" id="stepBadge">Bước 0</span>
+                    <span class="step-phase" id="stepPhase">Chuẩn bị</span>
                     <p class="step-detail" id="stepDetail">Đang khởi tạo...</p>
                 </div>
 
+                <!-- Viz Container -->
                 <div class="viz-container" id="vizContainer"></div>
-                <div class="viz-controls">
-                    <button class="btn btn-small" id="prevStepBtn">⏮ Trước</button>
-                    <button class="btn btn-small btn-primary" id="playPauseBtn">▶ Chạy</button>
-                    <button class="btn btn-small" id="nextStepBtn">Sau ⏭</button>
+
+                <!-- Playback Controls -->
+                <div class="playback-controls">
+                    <div class="playback-buttons">
+                        <button class="play-btn" id="playPauseBtn" title="Phát/Dừng">▶</button>
+                        <button class="control-btn" id="nextStepBtn" title="Bước tiếp">⏭</button>
+                        <button class="control-btn" id="resetVizBtn" title="Đặt lại">🔄</button>
+                    </div>
                     <div class="speed-control">
-                        <label>Tốc độ:</label>
-                        <input type="range" id="speedSlider" min="1" max="10" value="5">
+                        <span class="speed-label">TỐC ĐỘ</span>
+                        <input type="range" class="speed-slider" id="speedSlider" min="10" max="2000" value="150"
+                            step="10">
+                        <span class="speed-value" id="speedDisplay">150 ms</span>
+                        <div class="speed-range-labels">
+                            <small>10ms (NHANH)</small>
+                            <small>2000ms (CHẬM)</small>
+                        </div>
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-label">TRẠNG THÁI</span>
+                        <span class="status-dot" id="statusDot"></span>
+                        <span class="status-text" id="statusText">SẴN SÀNG</span>
                     </div>
                 </div>
+
+                <!-- Viz Legend -->
                 <div class="viz-legend">
-                    <div class="legend-item">
-                        <span class="legend-color comparing"></span>
-                        <span>Đang so sánh</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color merging"></span>
-                        <span>Đang trộn</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color sorted"></span>
-                        <span>Đã sắp xếp</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Result Section -->
-            <section class="result-section hidden" id="resultSection">
-                <!-- Animated Check Icon -->
-                <div class="result-check-icon">
-                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
-                        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                    </svg>
-                </div>
-
-                <h3>🎉 Sắp xếp hoàn tất!</h3>
-                <p class="result-subtitle">Dữ liệu đã được sắp xếp thành công với External Sort.</p>
-
-                <!-- Action Buttons -->
-                <div class="result-actions">
-                    <button class="btn btn-primary" id="downloadBtn">
-                        <span class="btn-icon">💾</span>
-                        Tải Binary (.bin)
-                    </button>
-                    <button class="btn btn-secondary" id="downloadTxtBtn">
-                        <span class="btn-icon">📄</span>
-                        Tải Text (.txt)
-                    </button>
-                    <button class="btn btn-secondary" id="newSortBtn">
-                        <span class="btn-icon">🔄</span>
-                        Làm Mới
-                    </button>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="result-stats-grid">
-                    <div class="stat-card stat-blue">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-label">TỔNG PHẦN TỬ</div>
-                        <div class="stat-value" id="statTotal">0</div>
-                    </div>
-                    <div class="stat-card stat-purple">
-                        <div class="stat-icon">📦</div>
-                        <div class="stat-label">SỐ RUN</div>
-                        <div class="stat-value" id="statRuns">0</div>
-                    </div>
-                    <div class="stat-card stat-orange">
-                        <div class="stat-icon">⏱️</div>
-                        <div class="stat-label">SỐ BƯỚC</div>
-                        <div class="stat-value" id="statSteps">0</div>
-                    </div>
-                    <div class="stat-card stat-green">
-                        <div class="stat-icon">🔀</div>
-                        <div class="stat-label">SO SÁNH</div>
-                        <div class="stat-value" id="statComparisons">0</div>
-                    </div>
-                </div>
-
-                <!-- Additional Info -->
-                <div class="result-info-row">
-                    <div class="info-box">
-                        <span class="info-box-icon">💾</span>
-                        <div>
-                            <div class="info-box-label">RAM BUFFER (M)</div>
-                            <div class="info-box-value" id="statRam">5 phần tử</div>
-                        </div>
-                    </div>
-                    <div class="info-box">
-                        <span class="info-box-icon">🔄</span>
-                        <div>
-                            <div class="info-box-label">K-WAY MERGE</div>
-                            <div class="info-box-value" id="statKWay">2-way</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Result Preview -->
-                <div class="result-preview">
-                    <h4>📋 Xem trước kết quả</h4>
-                    <div class="result-data" id="resultData"></div>
-                    <div class="result-minmax">
-                        <div class="minmax-box min">
-                            <span>↓ MIN</span>
-                            <span class="minmax-value" id="statMin">0</span>
-                        </div>
-                        <div class="minmax-box max">
-                            <span>↑ MAX</span>
-                            <span class="minmax-value" id="statMax">0</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- Algorithm Info -->
-        <div class="glass-card info-card">
-            <!-- External Sort là gì -->
-            <div class="info-header">
-                <span class="info-icon">📖</span>
-                <h3>Tìm hiểu về External Sort</h3>
-            </div>
-            <p class="info-description">
-                Khi dữ liệu <em>vượt quá dung lượng RAM</em>, ta không thể sắp xếp trực tiếp trong bộ nhớ.
-                <strong>External Sort</strong> giải quyết vấn đề này bằng cách chia nhỏ dữ liệu thành các
-                <strong>Run</strong> (khối con), xử lý từng phần rồi <strong>trộn (Merge)</strong> chúng lại.
-            </p>
-
-            <div class="phase-buttons">
-                <div class="phase-btn">
-                    <span class="phase-number">①</span>
-                    Giai đoạn 1: Tạo Run
-                </div>
-                <div class="phase-btn phase-primary">
-                    <span class="phase-number">②</span>
-                    Giai đoạn 2: Trộn K-Way
+                    <div class="legend-item"><span class="legend-color default"></span>Mặc định</div>
+                    <div class="legend-item"><span class="legend-color comparing"></span>Đang so sánh</div>
+                    <div class="legend-item"><span class="legend-color merging"></span>Đang trộn</div>
+                    <div class="legend-item"><span class="legend-color sorted"></span>Đã sắp xếp</div>
                 </div>
             </div>
 
-            <!-- Accordion -->
-            <div class="accordion">
-                <div class="accordion-item">
-                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
-                        <span>⚙️ Nguyên lý hoạt động</span>
-                        <span class="accordion-icon">▼</span>
-                    </button>
-                    <div class="accordion-content">
-                        <div class="algorithm-steps">
-                            <div class="step">
-                                <div class="step-number">1</div>
-                                <div class="step-content">
-                                    <strong>Phân chia (Split)</strong>
-                                    <p>Đọc từng phần dữ liệu vừa với RAM (M phần tử), tạo thành các Run riêng
-                                        biệt</p>
-                                </div>
+            <!-- === TAB: KẾT QUẢ === -->
+            <div class="tab-panel" id="panelResult">
+                <div class="result-container">
+                    <div class="result-check-icon">
+                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                        </svg>
+                    </div>
+                    <h2>🎉 Sắp xếp hoàn tất!</h2>
+                    <p class="result-subtitle">Dữ liệu đã được sắp xếp thành công với External Merge Sort.</p>
+
+                    <!-- Result Stats -->
+                    <div class="result-stats-grid">
+                        <div class="r-stat-card">
+                            <div class="r-stat-icon">📊</div>
+                            <div class="r-stat-label">TỔNG PHẦN TỬ</div>
+                            <div class="r-stat-value" id="rStatTotal">0</div>
+                        </div>
+                        <div class="r-stat-card">
+                            <div class="r-stat-icon">📦</div>
+                            <div class="r-stat-label">SỐ RUN</div>
+                            <div class="r-stat-value" id="rStatRuns">0</div>
+                        </div>
+                        <div class="r-stat-card">
+                            <div class="r-stat-icon">⏱️</div>
+                            <div class="r-stat-label">SỐ BƯỚC</div>
+                            <div class="r-stat-value" id="rStatSteps">0</div>
+                        </div>
+                        <div class="r-stat-card">
+                            <div class="r-stat-icon">🔀</div>
+                            <div class="r-stat-label">SO SÁNH</div>
+                            <div class="r-stat-value" id="rStatCompare">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Result Preview -->
+                    <div class="result-preview">
+                        <h4>📋 Xem trước kết quả</h4>
+                        <div class="result-data" id="resultData"></div>
+                        <div class="result-minmax">
+                            <div class="minmax-box min"><span>↓ MIN</span><span class="minmax-value" id="rMin">0</span>
                             </div>
-                            <div class="step">
-                                <div class="step-number">2</div>
-                                <div class="step-content">
-                                    <strong>Sắp xếp nội bộ</strong>
-                                    <p>Mỗi Run được sắp xếp trong RAM bằng thuật toán nhanh (QuickSort,
-                                        Insertion Sort)
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="step">
-                                <div class="step-number">3</div>
-                                <div class="step-content">
-                                    <strong>Trộn đa chiều (K-Way)</strong>
-                                    <p>Lấy K runs, so sánh phần tử đầu mỗi run, chọn nhỏ nhất ghi ra output</p>
-                                </div>
+                            <div class="minmax-box max"><span>↑ MAX</span><span class="minmax-value" id="rMax">0</span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="accordion-item">
-                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
-                        <span>📊 Phân tích độ phức tạp</span>
-                        <span class="accordion-icon">▼</span>
-                    </button>
-                    <div class="accordion-content">
-                        <ul class="example-list">
-                            <li><strong>Thời gian:</strong> O(N × log N) - tương đương các thuật toán sắp xếp
-                                tối ưu
-                            </li>
-                            <li><strong>Bộ nhớ:</strong> O(M) - chỉ cần M phần tử trong RAM cùng lúc</li>
-                            <li><strong>I/O:</strong> O(N/B × log<sub>K</sub>(N/M)) - với B là kích thước block
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
-                        <span>💡 Ví dụ minh họa</span>
-                        <span class="accordion-icon">▼</span>
-                    </button>
-                    <div class="accordion-content">
-                        <ul class="example-list">
-                            <li><strong>Input:</strong> [8, 3, 7, 1, 5, 9, 2, 6, 4] với M=3, K=2</li>
-                            <li><strong>Bước 1:</strong> Tạo Run → [3,7,8], [1,5,9], [2,4,6]</li>
-                            <li><strong>Bước 2:</strong> Merge 2 run đầu → [1,3,5,7,8,9]</li>
-                            <li><strong>Bước 3:</strong> Merge với run còn lại → [1,2,3,4,5,6,7,8,9] ✅</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <button class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
-                        <span>⚠️ Lưu ý quan trọng</span>
-                        <span class="accordion-icon">▼</span>
-                    </button>
-                    <div class="accordion-content">
-                        <ul class="example-list">
-                            <li><strong>M lớn hơn:</strong> Ít run hơn → Ít lần merge → Nhanh hơn</li>
-                            <li><strong>K lớn hơn:</strong> Merge nhiều run cùng lúc → Ít pass hơn</li>
-                            <li><strong>Dữ liệu đã sắp:</strong> Vẫn tạo run nhưng merge hiệu quả hơn</li>
-                            <li><strong>Ứng dụng:</strong> Database, Big Data, xử lý log file lớn</li>
-                        </ul>
+                    <div class="result-actions">
+                        <button class="btn btn-primary" id="rDownloadBtn">💾 Tải Binary (.bin)</button>
+                        <button class="btn btn-secondary" id="rDownloadTxtBtn">📄 Tải Text (.txt)</button>
+                        <button class="btn btn-secondary" id="rNewSortBtn">🔄 Làm Mới</button>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- ========== RIGHT SIDEBAR ========== -->
+        <aside class="sidebar sidebar-right">
+            <!-- Thuật toán -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">⚙️</span>
+                    <span class="card-title">THUẬT TOÁN</span>
+                </div>
+                <div class="card-body">
+                    <select class="algo-select" id="algoSelect">
+                        <option value="merge_recursive">Merge Sort (Recursive)</option>
+                        <option value="merge_iterative">Merge Sort (Iterative)</option>
+                    </select>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkStable" checked>
+                        Ưu tiên tính ổn định
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkInPlace">
+                        Sắp xếp tại chỗ (In-place)
+                    </label>
+                </div>
+            </div>
+
+            <!-- Lịch sử -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🕘</span>
+                    <span class="card-title">LỊCH SỬ</span>
+                </div>
+                <div class="card-body">
+                    <div class="history-list" id="historyList">
+                        <p class="history-empty">Chưa có lịch sử sắp xếp</p>
+                    </div>
+                    <button class="btn btn-link" id="viewAllHistoryBtn" style="display:none;">XEM TOÀN BỘ LỊCH
+                        SỬ</button>
+                </div>
+            </div>
+
+            <!-- Thông tin thuật toán -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📖</span>
+                    <span class="card-title">THÔNG TIN</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-accordion">
+                        <details>
+                            <summary>⚙️ Nguyên lý hoạt động</summary>
+                            <div class="info-content">
+                                <p><strong>1. Phân chia:</strong> Đọc từng phần dữ liệu vừa RAM, tạo Run riêng biệt</p>
+                                <p><strong>2. Sắp xếp:</strong> Mỗi Run được sắp xếp trong RAM bằng QuickSort</p>
+                                <p><strong>3. Trộn K-Way:</strong> Lấy K runs, so sánh phần tử đầu, chọn nhỏ nhất</p>
+                            </div>
+                        </details>
+                        <details>
+                            <summary>📊 Độ phức tạp</summary>
+                            <div class="info-content">
+                                <p><strong>Thời gian:</strong> O(N × log N)</p>
+                                <p><strong>Bộ nhớ:</strong> O(M) — M phần tử trong RAM</p>
+                                <p><strong>I/O:</strong> O(N/B × log<sub>K</sub>(N/M))</p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </main>
 
-
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="app-footer">
+        <div class="footer-left">
+            <span class="footer-dot green"></span> ĐỘNG CƠ: SẴN SÀNG
+            <span class="footer-dot" id="sessionDot"></span>
+            <span id="sessionStatus">ĐÃ LƯU PHIÊN</span>
+        </div>
+        <div class="footer-center">
+            © 2024 External Sort Visualizer | Tiện ích dữ liệu hiệu năng cao
+        </div>
+        <div class="footer-right">
+            <span class="footer-label">TRẠNG THÁI HỆ THỐNG</span>
+            <div class="mini-bars" id="systemBars">
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/app.js"></script>
 </body>
