@@ -296,6 +296,19 @@ class App {
         this.estPass = document.getElementById('estPass');
         this.sortBtn = document.getElementById('sortBtn');
 
+        // Step navigation
+        this.stepNavBtns = document.querySelectorAll('.step-nav-btn');
+        this.panels = {
+            config: document.getElementById('panelConfig'),
+            simulation: document.getElementById('panelSimulation'),
+            result: document.getElementById('panelResult')
+        };
+        this.inputTabs = {
+            random: document.getElementById('inputRandom'),
+            manual: document.getElementById('inputManual'),
+            file: document.getElementById('inputFile')
+        };
+
         // Stats
         this.statSteps = document.getElementById('statSteps');
         this.statComparisons = document.getElementById('statComparisons');
@@ -318,8 +331,7 @@ class App {
         this.statusDot = document.getElementById('statusDot');
         this.statusText = document.getElementById('statusText');
 
-        // Result card (left sidebar)
-        this.resultCard = document.getElementById('resultCard');
+        // Download buttons
         this.downloadBtn = document.getElementById('downloadBtn');
         this.downloadTxtBtn = document.getElementById('downloadTxtBtn');
 
@@ -342,10 +354,6 @@ class App {
         // History
         this.historyList = document.getElementById('historyList');
         this.viewAllHistoryBtn = document.getElementById('viewAllHistoryBtn');
-
-        // Footer
-        this.sessionDot = document.getElementById('sessionDot');
-        this.sessionStatus = document.getElementById('sessionStatus');
     }
 
     _bindEvents() {
@@ -386,14 +394,14 @@ class App {
         });
 
         // Downloads
-        this.downloadBtn.addEventListener('click', () => this._downloadBin());
-        this.downloadTxtBtn.addEventListener('click', () => this._downloadTxt());
+        if (this.downloadBtn) this.downloadBtn.addEventListener('click', () => this._downloadBin());
+        if (this.downloadTxtBtn) this.downloadTxtBtn.addEventListener('click', () => this._downloadTxt());
         this.rDownloadBtn.addEventListener('click', () => this._downloadBin());
         this.rDownloadTxtBtn.addEventListener('click', () => this._downloadTxt());
-        this.rNewSortBtn.addEventListener('click', () => this._reset());
+        if (this.rNewSortBtn) this.rNewSortBtn.addEventListener('click', () => this._reset());
 
         // Theme
-        this.themeToggle.addEventListener('click', () => this._toggleTheme());
+        this.themeToggle.addEventListener('change', () => this._toggleTheme());
 
         // New session
         this.newSessionBtn.addEventListener('click', () => this._reset());
@@ -466,7 +474,7 @@ class App {
         const data = Array.from(this.originalData);
         this.statMin.textContent = Math.min(...data).toFixed(2);
         this.statMax.textContent = Math.max(...data).toFixed(2);
-        this.statMemory.textContent = formatFileSize(bytes);
+        if (this.statMemory) this.statMemory.textContent = formatFileSize(bytes);
 
         // Enable sort
         this.sortBtn.disabled = false;
@@ -512,9 +520,11 @@ class App {
                 onProgress: (p, msg) => { this.vizSubtitle.textContent = msg; },
                 onVisualization: async (step) => {
                     this.steps.push({ ...step });
+                    this.currentStep = this.steps.length - 1;
                     if (step.type === 'split') this.numRuns = step.runs.length;
                     if (step.type === 'merge') this.comparisonCount++;
                     this._updateLiveStats();
+                    this._updateStepInfo();
                     await this.visualizer.update(step);
                     await this._delay(this.visualizer.animationSpeed);
                 }
@@ -541,7 +551,7 @@ class App {
         this.statSteps.textContent = this.steps.length.toLocaleString();
         this.statComparisons.textContent = this.comparisonCount.toLocaleString();
         const ioMb = ((this.steps.length * 8 * (this.originalData?.length || 0)) / (1024 * 1024)).toFixed(1);
-        this.statDiskIO.textContent = `${ioMb} MB/s`;
+        if (this.statDiskIO) this.statDiskIO.textContent = `${ioMb} MB/s`;
     }
 
     _setStatus(text, processing) {
@@ -590,7 +600,11 @@ class App {
     _updateStepInfo() {
         if (this.steps.length === 0) return;
         const step = this.steps[this.currentStep];
-        this.stepBadge.textContent = `Bước ${this.currentStep + 1}/${this.steps.length}`;
+        if (this.isRunning) {
+            this.stepBadge.textContent = `Bước ${this.currentStep + 1}`;
+        } else {
+            this.stepBadge.textContent = `Bước ${this.currentStep + 1}/${this.steps.length}`;
+        }
 
         switch (step.type) {
             case 'split':
@@ -623,7 +637,7 @@ class App {
         const maxVal = Math.max(...data);
 
         // Left sidebar result card
-        this.resultCard.style.display = 'block';
+        if (this.resultCard) this.resultCard.style.display = 'block';
 
         // Center result panel stats
         this.rStatTotal.textContent = data.length;
@@ -670,18 +684,16 @@ class App {
     // ===== THEME =====
     _toggleTheme() {
         const html = document.documentElement;
-        const current = html.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', next);
-        this.themeToggle.querySelector('.theme-icon').textContent = next === 'dark' ? '☀️' : '🌙';
-        localStorage.setItem('esv-theme', next);
+        const isDark = this.themeToggle.checked;
+        html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('esv-theme', isDark ? 'dark' : 'light');
     }
 
     _loadTheme() {
         const saved = localStorage.getItem('esv-theme');
         if (saved) {
             document.documentElement.setAttribute('data-theme', saved);
-            this.themeToggle.querySelector('.theme-icon').textContent = saved === 'dark' ? '☀️' : '🌙';
+            this.themeToggle.checked = saved === 'dark';
         }
     }
 
@@ -706,9 +718,10 @@ class App {
     }
 
     _renderHistory(history) {
+        if (!this.historyList) return;
         if (history.length === 0) {
             this.historyList.innerHTML = '<p class="history-empty">Chưa có lịch sử sắp xếp</p>';
-            this.viewAllHistoryBtn.style.display = 'none';
+            if (this.viewAllHistoryBtn) this.viewAllHistoryBtn.style.display = 'none';
             return;
         }
         this.historyList.innerHTML = '';
@@ -723,7 +736,7 @@ class App {
             `;
             this.historyList.appendChild(el);
         });
-        this.viewAllHistoryBtn.style.display = history.length > 3 ? 'block' : 'none';
+        if (this.viewAllHistoryBtn) this.viewAllHistoryBtn.style.display = history.length > 3 ? 'block' : 'none';
     }
 
     // ===== SESSION STORAGE =====
@@ -746,8 +759,7 @@ class App {
                 session.sortedData = Array.from(this.sortedData);
             }
             sessionStorage.setItem('esv-session', JSON.stringify(session));
-            if (this.sessionDot) this.sessionDot.classList.add('green');
-            if (this.sessionStatus) this.sessionStatus.textContent = 'ĐÃ LƯU PHIÊN';
+
         } catch (e) { console.warn('Không thể lưu phiên:', e); }
     }
 
@@ -788,15 +800,15 @@ class App {
         this.fileMeta.style.display = 'none';
         this.bufferBadge.style.display = 'none';
         this.dataPreview.classList.add('hidden');
-        this.resultCard.style.display = 'none';
+        if (this.resultCard) this.resultCard.style.display = 'none';
         this.sortBtn.disabled = true;
         this.playPauseBtn.textContent = '▶';
 
         // Reset stats
         this.statSteps.textContent = '0';
         this.statComparisons.textContent = '0';
-        this.statDiskIO.textContent = '0 MB/s';
-        this.statMemory.textContent = '0 MB';
+        if (this.statDiskIO) this.statDiskIO.textContent = '0 MB/s';
+        if (this.statMemory) this.statMemory.textContent = '0 MB';
         this.statMin.textContent = '—';
         this.statMax.textContent = '—';
         this.estRuns.textContent = '—';

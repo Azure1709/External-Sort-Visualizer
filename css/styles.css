@@ -7,7 +7,8 @@
 /* ========== CSS Variables - Light Theme ========== */
 :root,
 [data-theme="light"] {
-    --bg-primary: #f0f2f5;
+    --bg-primary: #dbeafe;
+    --bg-gradient: linear-gradient(180deg, #B3E5FC 0%, #c8edfb 20%, #daf3ff 45%, #e8f4fd 70%, #f0f7ff 100%);
     --bg-secondary: #ffffff;
     --bg-tertiary: #f8f9fa;
     --bg-hover: #e8eaed;
@@ -26,7 +27,7 @@
 
     --viz-default: #8fbcad;
     --viz-comparing: #e8725a;
-    --viz-merging: #5ab8a0;
+    --viz-merging: #f59e0b;
     --viz-sorted: #4a7c6f;
 
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -46,7 +47,8 @@
 
 /* ========== Dark Theme ========== */
 [data-theme="dark"] {
-    --bg-primary: #111318;
+    --bg-primary: #0d1117;
+    --bg-gradient: linear-gradient(180deg, #0d1b2a 0%, #131f30 25%, #182640 50%, #1a2342 75%, #1e2550 100%);
     --bg-secondary: #1a1d24;
     --bg-tertiary: #22252d;
     --bg-hover: #2a2d36;
@@ -90,7 +92,7 @@ html {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg-primary);
+    background: var(--bg-gradient, var(--bg-primary));
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.5;
@@ -136,18 +138,18 @@ body {
 }
 
 .logo-icon {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
 }
 
 .logo-title {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.35rem;
     color: var(--text-primary);
 }
 
 .logo-subtitle {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     color: var(--text-muted);
     font-weight: 400;
 }
@@ -203,26 +205,261 @@ body {
     color: var(--text-muted);
 }
 
-/* Theme Toggle */
-.theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-full);
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: 500;
+/* Theme Switch */
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
     cursor: pointer;
-    transition: all 0.2s;
 }
 
-.theme-toggle:hover {
-    background: var(--bg-hover);
-    border-color: var(--accent);
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-slider {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #4FC3F7 0%, #81D4FA 50%, #B3E5FC 100%);
+    border-radius: 30px;
+    transition: background 0.5s;
+    overflow: hidden;
+}
+
+/* ---- Clouds (light mode) ---- */
+.theme-clouds {
+    position: absolute;
+    inset: 0;
+    transition: opacity 0.4s;
+}
+
+.cloud {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.9;
+}
+
+@keyframes cloud-float-right {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(-20px);
+    }
+}
+
+@keyframes cloud-float-left {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(-14px);
+    }
+}
+
+@keyframes cloud-float-gentle {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(8px);
+    }
+}
+
+/* Fluffy cloud 1 - top right */
+.cloud.c1 {
+    width: 8px;
+    height: 6px;
+    right: 8px;
+    top: 7px;
+    border-radius: 50%;
+    box-shadow:
+        5px 0 0 1px #fff,
+        -4px 1px 0 0px #fff,
+        2px -2px 0 1px #fff,
+        7px 1px 0 -1px rgba(255, 255, 255, 0.8);
+    animation: cloud-float-right 8s ease-in-out infinite;
+}
+
+/* Fluffy cloud 2 - bottom right */
+.cloud.c2 {
+    width: 6px;
+    height: 5px;
+    right: 5px;
+    bottom: 5px;
+    box-shadow:
+        4px 0 0 0px #fff,
+        -3px 0 0 0px #fff,
+        1px -2px 0 1px #fff;
+    animation: cloud-float-left 10s ease-in-out infinite;
+}
+
+/* Fluffy cloud 3 - mid right */
+.cloud.c3 {
+    width: 7px;
+    height: 5px;
+    right: 21px;
+    top: 12px;
+    opacity: 0.8;
+    border-radius: 50%;
+    box-shadow:
+        4px 0 0 1px #fff,
+        -3px 1px 0 0px #fff,
+        1px -2px 0 1px #fff;
+    animation: cloud-float-gentle 8s ease-in-out infinite;
+}
+
+/* ---- Stars (dark mode) ---- */
+.theme-stars {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Twinkling animation */
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.star.s1 {
+    width: 2px;
+    height: 2px;
+    left: 10px;
+    top: 6px;
+    animation: twinkle 2s ease-in-out infinite;
+}
+
+.star.s2 {
+    width: 3px;
+    height: 3px;
+    left: 18px;
+    top: 17px;
+    animation: twinkle 3s ease-in-out 0.5s infinite;
+    box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.5);
+}
+
+.star.s3 {
+    width: 2px;
+    height: 2px;
+    left: 7px;
+    bottom: 6px;
+    animation: twinkle 2.5s ease-in-out 1s infinite;
+}
+
+.star.s4 {
+    width: 2px;
+    height: 2px;
+    left: 22px;
+    top: 9px;
+    animation: twinkle 1.8s ease-in-out 0.3s infinite;
+}
+
+.star.s5 {
+    width: 1px;
+    height: 1px;
+    left: 14px;
+    top: 4px;
+    animation: twinkle 2.2s ease-in-out 0.8s infinite;
+}
+
+.star.s6 {
+    width: 2px;
+    height: 2px;
+    left: 5px;
+    top: 13px;
+    animation: twinkle 2.8s ease-in-out 1.5s infinite;
+}
+
+/* ---- Icon thumb (no white bg) ---- */
+.theme-icon-sun,
+.theme-icon-moon {
+    position: absolute;
+    top: 0;
+    left: 1px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    border-radius: 50%;
+    background: transparent;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+    z-index: 2;
+    line-height: 1;
+}
+
+.theme-icon-sun {
+    filter:
+        drop-shadow(0 0 3px #FFD700) drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 10px rgba(255, 215, 0, 0.4));
+}
+
+.theme-icon-moon {
+    filter:
+        drop-shadow(0 0 3px #fff) drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
+}
+
+/* Light mode (unchecked): sun on left */
+.theme-icon-sun {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.theme-icon-moon {
+    opacity: 0;
+    transform: translateX(0);
+}
+
+/* ---- Dark mode (checked) ---- */
+.theme-switch input:checked+.theme-slider {
+    background: linear-gradient(180deg, #0d1b2a 0%, #1b2838 50%, #2d2b55 100%);
+}
+
+.theme-switch input:checked+.theme-slider .theme-clouds {
+    opacity: 0;
+}
+
+.theme-switch input:checked+.theme-slider .theme-stars {
+    opacity: 1;
+}
+
+.theme-switch input:checked+.theme-slider .theme-icon-sun {
+    opacity: 0;
+    transform: translateX(30px);
+}
+
+.theme-switch input:checked+.theme-slider .theme-icon-moon {
+    opacity: 1;
+    transform: translateX(30px);
 }
 
 .btn-new-session {
@@ -1399,6 +1636,67 @@ body {
 
 .info-content p {
     margin-bottom: 4px;
+}
+
+/* Card scrollable */
+.card-scrollable .card-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Info boxes */
+.info-box {
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+    border-left: 3px solid var(--border-color);
+}
+
+.info-box:last-child {
+    margin-bottom: 0;
+}
+
+.info-box ul {
+    padding-left: 16px;
+    margin-top: 6px;
+}
+
+.info-box ul li {
+    margin-bottom: 4px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.info-box code {
+    background: var(--accent-bg);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.info-box-example {
+    background: rgba(74, 124, 111, 0.08);
+    border-left-color: var(--accent);
+}
+
+.info-box-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-left-color: #f59e0b;
+}
+
+.info-box-tip {
+    background: rgba(59, 130, 246, 0.08);
+    border-left-color: #3b82f6;
+}
+
+.text-green {
+    color: #10b981;
+}
+
+.text-blue {
+    color: #3b82f6;
 }
 
 /* ========== FOOTER ========== */
