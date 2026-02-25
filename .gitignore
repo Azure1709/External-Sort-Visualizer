@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Build & Output
+dist/
+build/
+*.bin
+*.dat
+
+# Logs
+*.log
+npm-debug.log*

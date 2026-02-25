@@ -1,6 +1,6 @@
 /**
  * @fileoverview Module thuật toán External Merge Sort
- * @author DSA++ Team
+ * @author Bùi Ngọc Thiên Thanh
  * @version 1.0.0
  */
 

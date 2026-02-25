@@ -1,6 +1,6 @@
 /**
  * @fileoverview Module chính điều khiển ứng dụng Binary File Sorter
- * @author DSA++ Team
+ * @author Bùi Ngọc Thiên Thanh
  * @version 2.0.0
  */
 

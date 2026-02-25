@@ -1,7 +1,7 @@
 /**
  * @fileoverview Module xử lý đọc/ghi tệp nhị phân
  * @description Cung cấp các hàm để đọc và tạo tệp nhị phân chứa số thực Double (8-bytes)
- * @author DSA++ Team
+ * @author Bùi Ngọc Thiên Thanh
  * @version 1.0.0
  */
 
@@ -37,14 +37,14 @@ export async function readBinaryFile(file) {
             try {
                 const arrayBuffer = event.target.result;
                 const float64Array = new Float64Array(arrayBuffer);
-                
+
                 // Kiểm tra giá trị hợp lệ
                 for (let i = 0; i < float64Array.length; i++) {
                     if (!Number.isFinite(float64Array[i])) {
                         console.warn(`Cảnh báo: Giá trị tại vị trí ${i} không hợp lệ (NaN hoặc Infinity)`);
                     }
                 }
-                
+
                 resolve(float64Array);
             } catch (error) {
                 reject(new Error('Lỗi khi phân tích dữ liệu: ' + error.message));
@@ -71,16 +71,16 @@ export async function readBinaryFile(file) {
  */
 export function createBinaryFile(data) {
     // Chuyển đổi sang Float64Array nếu cần
-    const float64Array = data instanceof Float64Array 
-        ? data 
+    const float64Array = data instanceof Float64Array
+        ? data
         : new Float64Array(data);
-    
+
     // Tạo ArrayBuffer từ Float64Array
     const buffer = float64Array.buffer.slice(
         float64Array.byteOffset,
         float64Array.byteOffset + float64Array.byteLength
     );
-    
+
     return new Blob([buffer], { type: 'application/octet-stream' });
 }
 
@@ -96,15 +96,15 @@ export function createBinaryFile(data) {
 export function downloadFile(blob, filename = 'sorted_output.bin') {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    
+
     link.href = url;
     link.download = filename;
     link.style.display = 'none';
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Giải phóng bộ nhớ
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -119,11 +119,11 @@ export function downloadFile(blob, filename = 'sorted_output.bin') {
  */
 export function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
-    
+
     const units = ['Bytes', 'KB', 'MB', 'GB'];
     const k = 1024;
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + units[i];
 }
 
@@ -139,10 +139,10 @@ export function formatFileSize(bytes) {
  */
 export function generateTestData(count, min = 0, max = 100) {
     const data = new Float64Array(count);
-    
+
     for (let i = 0; i < count; i++) {
         data[i] = min + Math.random() * (max - min);
     }
-    
+
     return data;
 }

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Module visualization cho quá trình sắp xếp
- * @author DSA++ Team
+ * @author Bùi Ngọc Thiên Thanh
  * @version 1.0.0
  */
 
