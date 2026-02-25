@@ -14,9 +14,7 @@
 
 ## 🚀 Demo Trực Tuyến
 
-**👉 [Truy cập ứng dụng tại đây](https://azure1709.github.io/External-Sort-Visualizer/)**
-
-> Không cần cài đặt, chỉ cần mở link và sử dụng ngay!
+**👉 [Link ứng dụng](https://azure1709.github.io/External-Sort-Visualizer/)**
 
 ---
 
@@ -38,10 +36,8 @@
 | 🎮 **Điều khiển linh hoạt**  | Play/Pause, Step từng bước, tốc độ 10ms–2000ms            |
 | 📈 **Thống kê chi tiết**     | Số bước thực hiện, phép so sánh, MIN/MAX                  |
 | 🎲 **3 cách nhập dữ liệu**  | Random, nhập tay, hoặc upload file .bin/.dat               |
-| 💾 **Lưu phiên làm việc**    | Reload trang vẫn giữ dữ liệu (sessionStorage)            |
 | 📥 **Xuất file kết quả**     | Download .bin hoặc .txt                                    |
-| 🌗 **Dark/Light mode**       | Chuyển đổi giao diện sáng/tối                              |
-| 📜 **Lịch sử sắp xếp**      | Lưu lại các lần sắp xếp trước đó                          |
+| 🌗 **Dark/Light mode**       | Chuyển đổi giao diện sáng/tối                             |
 
 ---
 
@@ -203,6 +199,12 @@ Merge Run 1 & 2 →
 
 MIT License — Xem file [LICENSE](LICENSE) để biết thêm chi tiết.
 
+---
+## References
+
+- [Visualgo](https://visualgo.net/) 
+- [External-Sort](https://theraven1312.github.io/External-Sort/) 
+- Tài liệu môn học 
 ---
 
 <p align="center">
