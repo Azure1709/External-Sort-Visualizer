@@ -1,5 +1,6 @@
 /**
  * @fileoverview Module chính điều khiển ứng dụng Binary File Sorter
+ * @description Phiên bản modular sử dụng ES6 imports, quản lý luồng nhập liệu → sắp xếp → kết quả
  * @author Bùi Ngọc Thiên Thanh
  * @version 2.0.0
  */
@@ -48,7 +49,10 @@ class BinaryFileSorterApp {
         this._bindEvents();
     }
 
-    /** Khởi tạo tham chiếu DOM elements */
+    /**
+     * Khởi tạo tham chiếu đến các DOM elements
+     * @private
+     */
     _initElements() {
         // Sections
         this.inputSection = document.getElementById('inputSection');
@@ -100,7 +104,10 @@ class BinaryFileSorterApp {
         this.downloadBtn = document.getElementById('downloadBtn');
     }
 
-    /** Đăng ký event handlers */
+    /**
+     * Đăng ký tất cả event handlers cho các DOM elements
+     * @private
+     */
     _bindEvents() {
         // Tabs
         this.tabBtns.forEach(btn => {
@@ -149,7 +156,11 @@ class BinaryFileSorterApp {
         });
     }
 
-    /** Chuyển tab */
+    /**
+     * Chuyển đổi tab nhập liệu (Random / Nhập tay / Tải tệp)
+     * @param {string} tabName - Tên tab: 'random' | 'manual' | 'file'
+     * @private
+     */
     _switchTab(tabName) {
         // Update buttons
         this.tabBtns.forEach(btn => {
@@ -163,7 +174,10 @@ class BinaryFileSorterApp {
         });
     }
 
-    /** Tạo dữ liệu ngẫu nhiên */
+    /**
+     * Tạo dữ liệu ngẫu nhiên từ các tham số trên giao diện
+     * @private
+     */
     _generateRandom() {
         const count = parseInt(this.randomCount.value) || 20;
         const min = parseFloat(this.randomMin.value) || 0;
@@ -184,7 +198,10 @@ class BinaryFileSorterApp {
         this._showDataPreview();
     }
 
-    /** Parse dữ liệu nhập tay */
+    /**
+     * Parse dữ liệu nhập tay từ textarea
+     * @private
+     */
     _parseManual() {
         const text = this.manualInput.value.trim();
         if (!text) {
@@ -207,14 +224,22 @@ class BinaryFileSorterApp {
         this._showDataPreview();
     }
 
-    /** Xử lý chọn file */
+    /**
+     * Xử lý sự kiện chọn file từ input
+     * @param {Event} e - Sự kiện change từ file input
+     * @private
+     */
     async _handleFileSelect(e) {
         if (e.target.files.length) {
             await this._processFile(e.target.files[0]);
         }
     }
 
-    /** Xử lý file đã chọn */
+    /**
+     * Xử lý file nhị phân được upload
+     * @param {File} file - Đối tượng File từ input hoặc drag-drop
+     * @private
+     */
     async _processFile(file) {
         try {
             this.originalFileName = file.name.replace(/\.[^.]+$/, '');
@@ -226,7 +251,11 @@ class BinaryFileSorterApp {
         }
     }
 
-    /** Hiển thị preview dữ liệu */
+    /**
+     * Hiển thị preview dữ liệu đã tải
+     * Cập nhật UI, hiện data items, enable controls, khởi tạo visualizer
+     * @private
+     */
     _showDataPreview() {
         this.elementCount.textContent = this.originalData.length;
 
@@ -250,7 +279,11 @@ class BinaryFileSorterApp {
         this.visualizer.setSpeed(parseInt(this.speedSlider.value));
     }
 
-    /** Bắt đầu sắp xếp */
+    /**
+     * Bắt đầu quá trình sắp xếp External Merge Sort
+     * Hiện progress bar, chạy thuật toán với visualization realtime
+     * @private
+     */
     async _startSort() {
         if (this.isRunning || !this.originalData) return;
 
@@ -301,13 +334,21 @@ class BinaryFileSorterApp {
         }
     }
 
-    /** Cập nhật progress bar */
+    /**
+     * Cập nhật progress bar và message
+     * @param {number} progress - Phần trăm tiến trình (0-100)
+     * @param {string} message - Thông báo trạng thái
+     * @private
+     */
     _updateProgress(progress, message) {
         this.progressFill.style.width = `${progress}%`;
         this.progressText.textContent = message;
     }
 
-    /** Bước trước */
+    /**
+     * Chuyển đến bước visualization trước đó
+     * @private
+     */
     async _prevStep() {
         if (this.currentStep > 0) {
             this.currentStep--;
@@ -316,7 +357,10 @@ class BinaryFileSorterApp {
         }
     }
 
-    /** Bước sau */
+    /**
+     * Chuyển đến bước visualization tiếp theo
+     * @private
+     */
     async _nextStep() {
         if (this.currentStep < this.steps.length - 1) {
             this.currentStep++;
@@ -325,7 +369,10 @@ class BinaryFileSorterApp {
         }
     }
 
-    /** Toggle play/pause */
+    /**
+     * Chuyển đổi trạng thái Play/Pause khi phát lại visualization
+     * @private
+     */
     async _togglePlayPause() {
         if (this.isPlaying) {
             this.isPlaying = false;
@@ -352,13 +399,19 @@ class BinaryFileSorterApp {
         }
     }
 
-    /** Cập nhật trạng thái các nút bước */
+    /**
+     * Cập nhật trạng thái enable/disable của các nút điều khiển bước
+     * @private
+     */
     _updateStepControls() {
         this.prevStepBtn.disabled = this.currentStep <= 0;
         this.nextStepBtn.disabled = this.currentStep >= this.steps.length - 1;
     }
 
-    /** Tải file kết quả */
+    /**
+     * Tải xuống file kết quả dạng nhị phân (.bin)
+     * @private
+     */
     _downloadResult() {
         if (!this.sortedData) return;
 
@@ -367,7 +420,11 @@ class BinaryFileSorterApp {
         downloadFile(blob, outputName);
     }
 
-    /** Reset ứng dụng */
+    /**
+     * Reset toàn bộ ứng dụng về trạng thái ban đầu
+     * Hủy sắp xếp, xóa dữ liệu, xóa visualization
+     * @private
+     */
     _reset() {
         this.sorter.cancel();
         this.isRunning = false;
@@ -395,8 +452,11 @@ class BinaryFileSorterApp {
         this.playPauseBtn.innerHTML = '▶ Chạy';
     }
 
+    /** @private */
     _showElement(el) { el.classList.remove('hidden'); el.classList.add('fade-in'); }
+    /** @private */
     _hideElement(el) { el.classList.add('hidden'); }
+    /** @private */
     _delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 }
 

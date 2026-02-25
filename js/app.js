@@ -1,11 +1,19 @@
 /**
  * @fileoverview External Sort Visualizer - Dashboard App
- * @description Ứng dụng sắp xếp ngoại với giao diện dashboard 3 cột
+ * @description Ứng dụng sắp xếp ngoại với giao diện dashboard 3 cột.
+ *              Bao gồm các module: File Handler, Sorter, Visualizer, và App chính.
+ * @author Bùi Ngọc Thiên Thanh
  * @version 3.0.0
  */
 
 // ==================== FILE HANDLER ====================
 
+/**
+ * Đọc tệp nhị phân và trả về mảng Float64Array
+ * @param {File} file - Đối tượng File từ input
+ * @returns {Promise<Float64Array>} Mảng số thực Double precision
+ * @throws {Error} Nếu tệp trống, không hợp lệ hoặc lỗi đọc
+ */
 async function readBinaryFile(file) {
     if (!file) throw new Error('Không có tệp được chọn');
     if (file.size === 0) throw new Error('Tệp trống');
@@ -18,11 +26,21 @@ async function readBinaryFile(file) {
     });
 }
 
+/**
+ * Tạo tệp nhị phân từ mảng số thực
+ * @param {Float64Array|number[]} data - Mảng số thực cần ghi
+ * @returns {Blob} Đối tượng Blob chứa dữ liệu nhị phân
+ */
 function createBinaryFile(data) {
     const f = data instanceof Float64Array ? data : new Float64Array(data);
     return new Blob([f.buffer.slice(f.byteOffset, f.byteOffset + f.byteLength)], { type: 'application/octet-stream' });
 }
 
+/**
+ * Tải xuống tệp từ Blob
+ * @param {Blob} blob - Đối tượng Blob cần tải
+ * @param {string} [filename='sorted_output.bin'] - Tên tệp kết quả
+ */
 function downloadFile(blob, filename = 'sorted_output.bin') {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -31,6 +49,11 @@ function downloadFile(blob, filename = 'sorted_output.bin') {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/**
+ * Định dạng kích thước tệp thành chuỗi dễ đọc
+ * @param {number} bytes - Kích thước tính bằng bytes
+ * @returns {string} Chuỗi định dạng (VD: "1.5 MB")
+ */
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
     const u = ['Bytes', 'KB', 'MB', 'GB'];
@@ -39,6 +62,13 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + u[i];
 }
 
+/**
+ * Tạo dữ liệu ngẫu nhiên để test
+ * @param {number} count - Số lượng phần tử
+ * @param {number} [min=0] - Giá trị nhỏ nhất
+ * @param {number} [max=100] - Giá trị lớn nhất
+ * @returns {Float64Array} Mảng số thực ngẫu nhiên
+ */
 function generateTestData(count, min = 0, max = 100) {
     const data = new Float64Array(count);
     for (let i = 0; i < count; i++) data[i] = min + Math.random() * (max - min);
@@ -47,13 +77,30 @@ function generateTestData(count, min = 0, max = 100) {
 
 // ==================== SORTER ====================
 
+/**
+ * Lớp triển khai thuật toán External Merge Sort
+ * @class
+ */
 class ExternalMergeSort {
     constructor() {
+        /** @type {boolean} Trạng thái tạm dừng */
         this.isPaused = false;
+        /** @type {boolean} Trạng thái đã hủy */
         this.isCancelled = false;
+        /** @type {Object[]} Các bước visualization đã ghi lại */
         this.visualizationSteps = [];
     }
 
+    /**
+     * Sắp xếp mảng sử dụng External Merge Sort
+     * @param {Float64Array|number[]} data - Mảng cần sắp xếp
+     * @param {Object} [options={}] - Tùy chọn cấu hình
+     * @param {number} [options.runSize=5] - Kích thước mỗi run (giới hạn RAM)
+     * @param {Function} [options.onProgress] - Callback cập nhật tiến trình
+     * @param {Function} [options.onVisualization] - Callback hiển thị visualization
+     * @param {boolean} [options.recordSteps=false] - Ghi lại các bước để replay
+     * @returns {Promise<Float64Array>} Mảng đã sắp xếp
+     */
     async sort(data, options = {}) {
         const { runSize = 5, onProgress = () => { }, onVisualization = () => { }, recordSteps = false } = options;
         this.isPaused = false;
@@ -101,14 +148,36 @@ class ExternalMergeSort {
         return new Float64Array(runs[0] || []);
     }
 
+    /**
+     * Chia mảng thành các run có kích thước cố định
+     * @param {number[]} arr - Mảng cần chia
+     * @param {number} size - Kích thước mỗi run
+     * @returns {number[][]} Mảng các run
+     * @private
+     */
     _createRuns(arr, size) {
         const runs = [];
         for (let i = 0; i < arr.length; i += size) runs.push(arr.slice(i, i + size));
         return runs;
     }
 
+    /**
+     * Sắp xếp một run trong bộ nhớ
+     * @param {number[]} run - Run cần sắp xếp
+     * @returns {number[]} Run đã sắp xếp tăng dần
+     * @private
+     */
     _sortRun(run) { return [...run].sort((a, b) => a - b); }
 
+    /**
+     * Merge hai run đã sắp xếp với visualization
+     * @param {number[]} left - Run bên trái
+     * @param {number[]} right - Run bên phải
+     * @param {Function} onViz - Callback hiển thị từng bước merge
+     * @param {boolean} recordSteps - Có ghi lại bước không
+     * @returns {Promise<number[]>} Mảng đã merge
+     * @private
+     */
     async _mergeWithViz(left, right, onViz, recordSteps) {
         const result = [];
         let i = 0, j = 0;
@@ -125,23 +194,43 @@ class ExternalMergeSort {
         return result;
     }
 
+    /** @private */
     _delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+    /** @private */
     _recordStep(step) { this.visualizationSteps.push({ ...step, timestamp: Date.now() }); }
+    /** Tạm dừng quá trình sắp xếp */
     pause() { this.isPaused = true; }
+    /** Tiếp tục quá trình sắp xếp */
     resume() { this.isPaused = false; }
+    /** Hủy quá trình sắp xếp */
     cancel() { this.isCancelled = true; this.isPaused = false; }
 }
 
 // ==================== VISUALIZER ====================
 
+/**
+ * Lớp quản lý visualization cho quá trình sắp xếp
+ * @class
+ */
 class SortVisualizer {
+    /**
+     * @param {HTMLElement} container - Container DOM chứa visualization
+     */
     constructor(container) {
+        /** @type {HTMLElement} Container chính */
         this.container = container;
+        /** @type {HTMLElement[]} Danh sách các thanh (bar) */
         this.bars = [];
+        /** @type {number} Tốc độ animation (ms) */
         this.animationSpeed = 150;
+        /** @type {number} Giá trị lớn nhất để tính tỉ lệ chiều cao */
         this.maxValue = 0;
     }
 
+    /**
+     * Khởi tạo visualization với dữ liệu ban đầu
+     * @param {number[]} data - Mảng dữ liệu cần hiển thị
+     */
     init(data) {
         this.container.innerHTML = '';
         this.bars = [];
@@ -164,12 +253,22 @@ class SortVisualizer {
         });
     }
 
+    /**
+     * Tính chiều cao thanh dựa trên giá trị
+     * @param {number} value - Giá trị cần tính chiều cao
+     * @returns {number} Chiều cao tính bằng pixel
+     * @private
+     */
     _getBarHeight(value) {
         const h = 220, min = 10;
         if (this.maxValue === 0) return min;
         return min + (Math.abs(value) / this.maxValue) * (h - min);
     }
 
+    /**
+     * Cập nhật visualization theo bước sắp xếp
+     * @param {Object} step - Thông tin bước (type: split|sort|merge|complete)
+     */
     async update(step) {
         switch (step.type) {
             case 'split': await this._showSplit(step.runs); break;
@@ -179,6 +278,11 @@ class SortVisualizer {
         }
     }
 
+    /**
+     * Hiển thị bước chia dữ liệu thành các run
+     * @param {number[][]} runs - Các run đã chia
+     * @private
+     */
     async _showSplit(runs) {
         this.container.innerHTML = ''; this.bars = [];
         this.init(runs.flat());
@@ -190,6 +294,12 @@ class SortVisualizer {
         await this._delay(this.animationSpeed);
     }
 
+    /**
+     * Hiển thị bước sắp xếp từng run
+     * @param {number[][]} runs - Tất cả các run
+     * @param {number} activeRun - Index của run đang được sắp xếp
+     * @private
+     */
     async _showSort(runs, activeRun) {
         this.container.innerHTML = ''; this.bars = [];
         this.init(runs.flat());
@@ -200,6 +310,11 @@ class SortVisualizer {
         await this._delay(this.animationSpeed);
     }
 
+    /**
+     * Hiển thị bước merge hai run
+     * @param {Object} step - Thông tin merge (left, right, leftIndex, rightIndex)
+     * @private
+     */
     async _showMerge(step) {
         this.container.innerHTML = ''; this.bars = [];
         this.init([...step.left, ...step.right]);
@@ -212,34 +327,64 @@ class SortVisualizer {
         await this._delay(this.animationSpeed / 2);
     }
 
+    /**
+     * Hiển thị kết quả sắp xếp hoàn tất với animation
+     * @param {number[]} data - Mảng đã sắp xếp
+     * @private
+     */
     async _showComplete(data) {
         this.container.innerHTML = ''; this.bars = [];
         this.init(data);
         for (let i = 0; i < this.bars.length; i++) { this.bars[i].classList.add('sorted'); await this._delay(15); }
     }
 
+    /**
+     * Đặt tốc độ animation
+     * @param {number} ms - Thời gian delay giữa các bước (milliseconds)
+     */
     setSpeed(ms) { this.animationSpeed = ms; }
+    /** @private */
     _delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+    /** Xóa toàn bộ visualization */
     clear() { this.container.innerHTML = ''; this.bars = []; }
 }
 
 // ==================== MAIN APP ====================
 
+/**
+ * Lớp quản lý ứng dụng chính External Sort Visualizer
+ * Điều phối toàn bộ luồng: nhập liệu → cấu hình → sắp xếp → visualization → xuất kết quả
+ * @class
+ */
 class App {
     constructor() {
+        /** @type {Float64Array|null} Dữ liệu gốc chưa sắp xếp */
         this.originalData = null;
+        /** @type {Float64Array|null} Dữ liệu đã sắp xếp */
         this.sortedData = null;
+        /** @type {string} Tên file gốc (dùng cho tên file xuất) */
         this.originalFileName = 'data';
+        /** @type {ExternalMergeSort} Instance thuật toán sắp xếp */
         this.sorter = new ExternalMergeSort();
+        /** @type {SortVisualizer|null} Instance visualization */
         this.visualizer = null;
+        /** @type {boolean} Đang chạy quá trình sắp xếp */
         this.isRunning = false;
+        /** @type {boolean} Đang phát lại animation */
         this.isPlaying = false;
+        /** @type {number} Index bước hiện tại trong visualization */
         this.currentStep = 0;
+        /** @type {Object[]} Danh sách các bước visualization */
         this.steps = [];
+        /** @type {number} Số phép so sánh đã thực hiện */
         this.comparisonCount = 0;
+        /** @type {number} Số run đã tạo */
         this.numRuns = 0;
+        /** @type {number} Giới hạn RAM (số phần tử mỗi run) */
         this.ramLimit = 5;
+        /** @type {number} Số luồng merge (K-way) */
         this.kWay = 2;
+        /** @type {number} Thời điểm bắt đầu sắp xếp (ms) */
         this.startTime = 0;
 
         this._initDOM();
@@ -250,6 +395,10 @@ class App {
         console.log('✅ External Sort Visualizer initialized');
     }
 
+    /**
+     * Khởi tạo tham chiếu đến các DOM elements
+     * @private
+     */
     _initDOM() {
         // Step nav
         this.stepNavBtns = document.querySelectorAll('.step-nav-btn');
@@ -356,6 +505,10 @@ class App {
         this.viewAllHistoryBtn = document.getElementById('viewAllHistoryBtn');
     }
 
+    /**
+     * Đăng ký tất cả event handlers cho các DOM elements
+     * @private
+     */
     _bindEvents() {
         // Step nav
         this.stepNavBtns.forEach(btn => btn.addEventListener('click', () => this._switchStep(btn.dataset.step)));
@@ -408,17 +561,31 @@ class App {
     }
 
     // ===== NAVIGATION =====
+    /**
+     * Chuyển đổi giữa các tab (Cấu hình / Mô phỏng / Kết quả)
+     * @param {string} step - Tên tab: 'config' | 'simulation' | 'result'
+     * @private
+     */
     _switchStep(step) {
         this.stepNavBtns.forEach(b => b.classList.toggle('active', b.dataset.step === step));
         Object.keys(this.panels).forEach(k => this.panels[k].classList.toggle('active', k === step));
     }
 
+    /**
+     * Chuyển đổi tab nhập liệu (Random / Nhập tay / Tải tệp)
+     * @param {string} tab - Tên tab: 'random' | 'manual' | 'file'
+     * @private
+     */
     _switchInputTab(tab) {
         this.inputTabBtns.forEach(b => b.classList.toggle('active', b.dataset.inputTab === tab));
         Object.keys(this.inputTabs).forEach(k => this.inputTabs[k].classList.toggle('active', k === tab));
     }
 
     // ===== DATA INPUT =====
+    /**
+     * Tạo dữ liệu ngẫu nhiên từ các tham số trên giao diện
+     * @private
+     */
     _generateRandom() {
         const count = parseInt(this.randomCount.value) || 20;
         const min = parseFloat(this.randomMin.value) || 0;
@@ -430,6 +597,10 @@ class App {
         this._onDataLoaded();
     }
 
+    /**
+     * Parse dữ liệu nhập tay từ textarea
+     * @private
+     */
     _parseManual() {
         const text = this.manualInput.value.trim();
         if (!text) { alert('Vui lòng nhập dữ liệu'); return; }
@@ -440,6 +611,11 @@ class App {
         this._onDataLoaded();
     }
 
+    /**
+     * Xử lý file nhị phân được upload
+     * @param {File} file - Đối tượng File từ input hoặc drag-drop
+     * @private
+     */
     async _processFile(file) {
         try {
             this.originalFileName = file.name.replace(/\.[^.]+$/, '');
@@ -448,6 +624,12 @@ class App {
         } catch (err) { alert('Lỗi: ' + err.message); }
     }
 
+    /**
+     * Xử lý sau khi dữ liệu được tải thành công
+     * Cập nhật UI, hiển thị preview, enable nút sắp xếp, khởi tạo visualizer
+     * @param {number} [fileBytes] - Kích thước file gốc (bytes), mặc định tính từ data
+     * @private
+     */
     _onDataLoaded(fileBytes) {
         const n = this.originalData.length;
         const bytes = fileBytes || n * 8;
@@ -488,6 +670,10 @@ class App {
         this._saveSession();
     }
 
+    /**
+     * Cập nhật ước tính hiệu suất (số run, số pass) dựa trên cấu hình hiện tại
+     * @private
+     */
     _updateEstimation() {
         if (!this.originalData) return;
         const n = this.originalData.length, m = this.ramLimit, k = this.kWay;
@@ -498,6 +684,11 @@ class App {
     }
 
     // ===== SORTING =====
+    /**
+     * Bắt đầu quá trình sắp xếp External Merge Sort
+     * Chuyển sang tab mô phỏng, chạy thuật toán với visualization realtime
+     * @private
+     */
     async _startSort() {
         if (this.isRunning || !this.originalData) return;
         this.isRunning = true;
@@ -547,6 +738,10 @@ class App {
         }
     }
 
+    /**
+     * Cập nhật thống kê realtime trên sidebar (số bước, so sánh, I/O)
+     * @private
+     */
     _updateLiveStats() {
         this.statSteps.textContent = this.steps.length.toLocaleString();
         this.statComparisons.textContent = this.comparisonCount.toLocaleString();
@@ -554,12 +749,22 @@ class App {
         if (this.statDiskIO) this.statDiskIO.textContent = `${ioMb} MB/s`;
     }
 
+    /**
+     * Cập nhật trạng thái hiển thị (SẴN SÀNG / ĐANG XỬ LÝ / HOÀN TẤT / LỖI)
+     * @param {string} text - Nội dung trạng thái
+     * @param {boolean} processing - true nếu đang xử lý (hiệu ứng dot nhấp nháy)
+     * @private
+     */
     _setStatus(text, processing) {
         this.statusText.textContent = text;
         this.statusDot.classList.toggle('processing', processing);
     }
 
     // ===== PLAYBACK =====
+    /**
+     * Chuyển đổi trạng thái Play/Pause khi phát lại visualization
+     * @private
+     */
     async _togglePlayPause() {
         if (this.isPlaying) {
             this.isPlaying = false;
@@ -579,6 +784,10 @@ class App {
         }
     }
 
+    /**
+     * Chuyển đến bước visualization tiếp theo
+     * @private
+     */
     async _nextStep() {
         if (this.currentStep < this.steps.length - 1) {
             this.currentStep++;
@@ -587,6 +796,10 @@ class App {
         }
     }
 
+    /**
+     * Đặt lại visualization về bước đầu tiên
+     * @private
+     */
     _resetViz() {
         this.isPlaying = false;
         this.currentStep = 0;
@@ -597,6 +810,10 @@ class App {
         }
     }
 
+    /**
+     * Cập nhật thông tin bước hiện tại (số bước, giai đoạn, chi tiết)
+     * @private
+     */
     _updateStepInfo() {
         if (this.steps.length === 0) return;
         const step = this.steps[this.currentStep];
@@ -630,6 +847,11 @@ class App {
     }
 
     // ===== RESULTS =====
+    /**
+     * Hiển thị kết quả sắp xếp trên tab Kết quả
+     * Bao gồm thống kê, preview dữ liệu, và giá trị MIN/MAX
+     * @private
+     */
     _showResults() {
         if (!this.sortedData) return;
         const data = Array.from(this.sortedData);
@@ -670,11 +892,19 @@ class App {
     }
 
     // ===== DOWNLOADS =====
+    /**
+     * Tải xuống file kết quả dạng nhị phân (.bin)
+     * @private
+     */
     _downloadBin() {
         if (!this.sortedData) return;
         downloadFile(createBinaryFile(this.sortedData), `${this.originalFileName}_sorted.bin`);
     }
 
+    /**
+     * Tải xuống file kết quả dạng văn bản (.txt)
+     * @private
+     */
     _downloadTxt() {
         if (!this.sortedData) return;
         const text = Array.from(this.sortedData).map(n => n.toFixed(6)).join('\n');
@@ -682,6 +912,10 @@ class App {
     }
 
     // ===== THEME =====
+    /**
+     * Chuyển đổi giữa Dark mode và Light mode
+     * @private
+     */
     _toggleTheme() {
         const html = document.documentElement;
         const isDark = this.themeToggle.checked;
@@ -689,6 +923,10 @@ class App {
         localStorage.setItem('esv-theme', isDark ? 'dark' : 'light');
     }
 
+    /**
+     * Tải theme đã lưu từ localStorage
+     * @private
+     */
     _loadTheme() {
         const saved = localStorage.getItem('esv-theme');
         if (saved) {
@@ -698,6 +936,12 @@ class App {
     }
 
     // ===== HISTORY =====
+    /**
+     * Thêm một mục vào lịch sử sắp xếp (lưu localStorage, tối đa 10 mục)
+     * @param {string} name - Tên file/dữ liệu
+     * @param {number} durationMs - Thời gian sắp xếp (ms)
+     * @private
+     */
     _addHistory(name, durationMs) {
         const history = JSON.parse(localStorage.getItem('esv-history') || '[]');
         history.unshift({
@@ -712,11 +956,20 @@ class App {
         this._renderHistory(history);
     }
 
+    /**
+     * Tải và hiển thị lịch sử sắp xếp từ localStorage
+     * @private
+     */
     _loadHistory() {
         const history = JSON.parse(localStorage.getItem('esv-history') || '[]');
         this._renderHistory(history);
     }
 
+    /**
+     * Render danh sách lịch sử lên giao diện
+     * @param {Object[]} history - Mảng các mục lịch sử
+     * @private
+     */
     _renderHistory(history) {
         if (!this.historyList) return;
         if (history.length === 0) {
@@ -740,6 +993,11 @@ class App {
     }
 
     // ===== SESSION STORAGE =====
+    /**
+     * Lưu phiên làm việc hiện tại vào sessionStorage
+     * Bao gồm dữ liệu gốc, dữ liệu đã sắp xếp, và thống kê
+     * @private
+     */
     _saveSession() {
         try {
             const session = {
@@ -763,6 +1021,10 @@ class App {
         } catch (e) { console.warn('Không thể lưu phiên:', e); }
     }
 
+    /**
+     * Khôi phục phiên làm việc từ sessionStorage (nếu có)
+     * @private
+     */
     _restoreSession() {
         try {
             const raw = sessionStorage.getItem('esv-session');
@@ -783,6 +1045,11 @@ class App {
     }
 
     // ===== RESET =====
+    /**
+     * Reset toàn bộ ứng dụng về trạng thái ban đầu
+     * Hủy sắp xếp, xóa dữ liệu, xóa visualization, xóa session
+     * @private
+     */
     _reset() {
         this.sorter.cancel();
         this.isRunning = false;
@@ -821,6 +1088,7 @@ class App {
         sessionStorage.removeItem('esv-session');
     }
 
+    /** @private */
     _delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 }
 

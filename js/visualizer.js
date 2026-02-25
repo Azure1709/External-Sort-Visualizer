@@ -1,5 +1,6 @@
 /**
  * @fileoverview Module visualization cho quá trình sắp xếp
+ * @description Quản lý hiển thị animation các bước split, sort, merge, complete
  * @author Bùi Ngọc Thiên Thanh
  * @version 1.0.0
  */
@@ -13,9 +14,13 @@ export class SortVisualizer {
      * @param {HTMLElement} container - Container chứa visualization
      */
     constructor(container) {
+        /** @type {HTMLElement} Container chính */
         this.container = container;
+        /** @type {HTMLElement[]} Danh sách các thanh (bar) */
         this.bars = [];
+        /** @type {number} Tốc độ animation (ms) */
         this.animationSpeed = 300;
+        /** @type {number} Giá trị lớn nhất để tính tỉ lệ chiều cao */
         this.maxValue = 0;
     }
 
@@ -48,6 +53,8 @@ export class SortVisualizer {
 
     /**
      * Tính chiều cao thanh dựa trên giá trị
+     * @param {number} value - Giá trị cần tính chiều cao
+     * @returns {number} Chiều cao tính bằng pixel
      * @private
      */
     _getBarHeight(value) {
@@ -78,6 +85,11 @@ export class SortVisualizer {
         }
     }
 
+    /**
+     * Hiển thị bước chia dữ liệu thành các run
+     * @param {number[][]} runs - Các run đã chia
+     * @private
+     */
     async _showSplit(runs) {
         // Rebuild bars từ runs
         this.container.innerHTML = '';
@@ -101,6 +113,12 @@ export class SortVisualizer {
         await this._delay(this.animationSpeed);
     }
 
+    /**
+     * Hiển thị bước sắp xếp từng run
+     * @param {number[][]} runs - Tất cả các run
+     * @param {number} activeRun - Index của run đang được sắp xếp
+     * @private
+     */
     async _showSort(runs, activeRun) {
         // Rebuild và highlight active run
         this.container.innerHTML = '';
@@ -124,6 +142,11 @@ export class SortVisualizer {
         await this._delay(this.animationSpeed);
     }
 
+    /**
+     * Hiển thị bước merge hai run
+     * @param {Object} step - Thông tin merge (left, right, leftIndex, rightIndex)
+     * @private
+     */
     async _showMerge(step) {
         // Highlight đang merge
         this.container.innerHTML = '';
@@ -148,6 +171,11 @@ export class SortVisualizer {
         await this._delay(this.animationSpeed / 2);
     }
 
+    /**
+     * Hiển thị kết quả sắp xếp hoàn tất với animation
+     * @param {number[]} sortedData - Mảng đã sắp xếp
+     * @private
+     */
     async _showComplete(sortedData) {
         this.container.innerHTML = '';
         this.bars = [];
@@ -162,12 +190,13 @@ export class SortVisualizer {
 
     /**
      * Đặt tốc độ animation
-     * @param {number} speed - Giá trị 1-10
+     * @param {number} speed - Giá trị 1-10 (cao = nhanh hơn)
      */
     setSpeed(speed) {
         this.animationSpeed = 600 - (speed * 50);
     }
 
+    /** @private */
     _delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }

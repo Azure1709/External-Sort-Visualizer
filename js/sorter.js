@@ -10,15 +10,22 @@
  */
 export class ExternalMergeSort {
     constructor() {
+        /** @type {boolean} Trạng thái tạm dừng */
         this.isPaused = false;
+        /** @type {boolean} Trạng thái đã hủy */
         this.isCancelled = false;
+        /** @type {Object[]} Các bước visualization đã ghi lại */
         this.visualizationSteps = [];
     }
 
     /**
      * Sắp xếp mảng sử dụng External Merge Sort
      * @param {Float64Array|number[]} data - Mảng cần sắp xếp
-     * @param {Object} [options={}] - Tùy chọn
+     * @param {Object} [options={}] - Tùy chọn cấu hình
+     * @param {number} [options.runSize=10] - Kích thước mỗi run (giới hạn RAM)
+     * @param {Function} [options.onProgress] - Callback cập nhật tiến trình
+     * @param {Function} [options.onVisualization] - Callback hiển thị visualization
+     * @param {boolean} [options.recordSteps=false] - Ghi lại các bước để replay
      * @returns {Promise<Float64Array>} Mảng đã sắp xếp
      */
     async sort(data, options = {}) {
@@ -91,6 +98,13 @@ export class ExternalMergeSort {
         return new Float64Array(runs[0] || []);
     }
 
+    /**
+     * Chia mảng thành các run có kích thước cố định
+     * @param {number[]} arr - Mảng cần chia
+     * @param {number} runSize - Kích thước mỗi run
+     * @returns {number[][]} Mảng các run
+     * @private
+     */
     _createRuns(arr, runSize) {
         const runs = [];
         for (let i = 0; i < arr.length; i += runSize) {
@@ -99,10 +113,25 @@ export class ExternalMergeSort {
         return runs;
     }
 
+    /**
+     * Sắp xếp một run trong bộ nhớ
+     * @param {number[]} run - Run cần sắp xếp
+     * @returns {number[]} Run đã sắp xếp tăng dần
+     * @private
+     */
     _sortRun(run) {
         return [...run].sort((a, b) => a - b);
     }
 
+    /**
+     * Merge hai run đã sắp xếp với visualization
+     * @param {number[]} left - Run bên trái
+     * @param {number[]} right - Run bên phải
+     * @param {Function} onVisualization - Callback hiển thị từng bước merge
+     * @param {boolean} recordSteps - Có ghi lại bước không
+     * @returns {Promise<number[]>} Mảng đã merge
+     * @private
+     */
     async _mergeWithVisualization(left, right, onVisualization, recordSteps) {
         const result = [];
         let i = 0, j = 0;
@@ -126,17 +155,27 @@ export class ExternalMergeSort {
         return result;
     }
 
+    /** @private */
     _delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    /** @private */
     _recordStep(step) { this.visualizationSteps.push({ ...step, timestamp: Date.now() }); }
+    /** Tạm dừng quá trình sắp xếp */
     pause() { this.isPaused = true; }
+    /** Tiếp tục quá trình sắp xếp */
     resume() { this.isPaused = false; }
+    /** Hủy quá trình sắp xếp */
     cancel() { this.isCancelled = true; this.isPaused = false; }
+    /**
+     * Lấy danh sách các bước visualization đã ghi
+     * @returns {Object[]} Bản sao mảng các bước
+     */
     getVisualizationSteps() { return [...this.visualizationSteps]; }
 }
 
 /**
- * Sắp xếp nhanh không visualization
+ * Sắp xếp nhanh không visualization (dùng Array.sort built-in)
  * @param {Float64Array|number[]} data - Dữ liệu cần sắp xếp
+ * @param {Function} [onProgress] - Callback cập nhật tiến trình
  * @returns {Promise<Float64Array>} Mảng đã sắp xếp
  */
 export async function quickSort(data, onProgress = () => { }) {
