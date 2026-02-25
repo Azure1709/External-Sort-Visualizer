@@ -5,10 +5,10 @@
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-GitHub_Pages-2ea44f)](https://azure1709.github.io/External-Sort-Visualizer/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-| 📚 Môn học | CS523 - Cấu trúc dữ liệu và Giải thuật nâng cao |
+| 📚 Môn học | CS523.Q21 - Cấu trúc dữ liệu và Giải thuật nâng cao |
 | ---------- | ------------------------------------------------- |
 | 🏫 Trường  | Đại học Công nghệ Thông tin - ĐHQG TP.HCM (UIT)  |
-| 👨‍💻 Tác giả | Bùi Ngọc Thiên Thanh - 23521436                  |
+| 👨‍💻 Sinh viên | Bùi Ngọc Thiên Thanh - 23521436                  |
 
 ---
 
@@ -208,5 +208,5 @@ MIT License — Xem file [LICENSE](LICENSE) để biết thêm chi tiết.
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/Azure1709">Bùi Ngọc Thiên Thanh</a> | UIT 2026
+  Made by <a href="https://github.com/Azure1709">Bùi Ngọc Thiên Thanh</a> | UIT 2026
 </p>
